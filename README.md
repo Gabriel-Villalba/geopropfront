@@ -1,0 +1,165 @@
+# GeoProp Front
+
+Frontend de la plataforma SaaS inmobiliaria multi-cliente **GeoProp**.
+
+## Stack
+
+- React 18
+- TypeScript (strict)
+- Vite
+- TailwindCSS
+- Context API (`AuthContext`)
+- Axios para consumo de API (`src/services/api.ts`)
+- Vitest + Testing Library (tests)
+
+## Requisitos
+
+- Node.js 18+ (recomendado 20+)
+- npm 9+
+
+## Instalacion
+
+```bash
+npm install
+```
+
+## Variables de entorno
+
+Crear/usar `.env` en la raiz:
+
+```env
+VITE_API_URL="https://backproperties.onrender.com/api"
+```
+
+## Scripts
+
+- `npm run dev`: servidor local
+- `npm run build`: build de produccion
+- `npm run preview`: preview del build
+- `npm run lint`: lint
+- `npm run typecheck`: chequeo de tipos TS
+- `npm test`: ejecuta tests una vez
+- `npm run test:watch`: tests en modo watch
+
+## Estructura principal
+
+```text
+src/
+  components/
+  contexts/
+  hooks/
+  pages/
+  services/
+  test/
+  types/
+```
+
+## Modulos principales
+
+### Autenticacion
+
+- `src/contexts/AuthContext.tsx`
+- Mantiene usuario/token en `localStorage`.
+- Login/Register reales contra backend (`POST /auth/login`, `POST /auth/register`).
+- Sincroniza perfil autenticado con `GET /me` al iniciar sesion y al boot de la app.
+
+### API centralizada
+
+- `src/services/api.ts`
+- Configura `baseURL`, timeout e interceptor JWT.
+- Expone servicios por dominio (`authApi`, `meApi`, `propertyApi`, `alertApi`) y la instancia `api`.
+- Normaliza errores de negocio y mapeos backend->UI en `src/services/backend.ts`.
+
+### Panel propietario (integrado en dashboard)
+
+- `src/components/OwnerPanel.tsx`
+- `src/hooks/useOwnerPanel.ts`
+- Visible para usuarios autenticados dentro de `/dashboard`.
+- Incluye:
+  - Datos de plan y perfil (`/me`)
+  - Mis propiedades (`/me/properties`)
+  - Crear/editar propiedad
+  - Activar/desactivar propiedad
+  - Aprobar propiedad (si rol admin)
+  - Soft delete de propiedad
+  - Crear/listar/desactivar alertas
+
+### Panel de usuarios (admin)
+
+- `src/pages/UserManagement.tsx`
+- `src/hooks/useUsers.ts`
+- Ruta: `/users`
+- Solo admin puede acceder; no-admin es redirigido a `/dashboard`.
+- Incluye:
+  - Vista mobile (cards) y desktop (tabla)
+  - Crear usuario
+  - Editar usuario (sin password)
+  - Activar/desactivar (`active`) con confirmacion
+  - Badges por rol
+  - Toast simple de exito/error
+
+## Endpoints usados por frontend
+
+Auth:
+
+- `POST /auth/login`
+- `POST /auth/register`
+
+> **Nota**: el frontend manda el email en minúsculas, elimina espacios alrededor del
+> nombre/contraseña y, en el caso de auto‑registro, anexamos el campo `role: "agent"`
+> y un `clientName` igual al `name`. La normalización se realiza en
+> `src/services/api.ts` para evitar discrepancias con el backend.
+
+- `GET /me`
+
+Busqueda publica:
+
+- `GET /search`
+
+Propietario:
+
+- `GET /me/properties`
+- `GET /properties`
+- `POST /properties`
+- `PUT /properties/:id`
+- `PATCH /properties/:id/activate`
+- `PATCH /properties/:id/deactivate`
+- `PATCH /properties/:id/approve` (admin)
+- `DELETE /properties/:id`
+- `GET /alerts`
+- `POST /alerts`
+- `PATCH /alerts/:id/deactivate`
+
+Usuarios (admin):
+
+- `GET /users`
+- `POST /users`
+- `PUT /users/:id`
+- `GET /clients/me`
+
+## Testing
+
+Configurado con Vitest + jsdom:
+
+- Setup: `src/test/setup.ts`
+- Hook tests: `src/hooks/useUsers.test.ts`
+- UI tests: `src/pages/UserManagement.test.tsx`
+
+Ejecutar:
+
+```bash
+npm test
+```
+
+## Rutas actuales
+
+- `/login`
+- `/dashboard`
+- `/users` (protegida + rol admin)
+
+## Notas
+
+- Si el usuario autenticado no trae `role` o `roleId = "admin"`, no podra entrar a `/users`.
+- El frontend espera backend con JWT en `Authorization: Bearer <token>`.
+- Actualmente el formulario de propietario solicita `cityId` (UUID) manual.
+- Proximo paso recomendado: integrar endpoint de catalogo de ciudades y reemplazar `cityId` manual por selector.
