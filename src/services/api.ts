@@ -37,7 +37,7 @@ function normalizeSearchProperty(property: SearchPropertyResponse): Property {
 }
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:3001/api',
+  baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api',
   timeout: 10000,
 });
 
@@ -53,39 +53,53 @@ api.interceptors.request.use((config) => {
 // has historically been a little picky about formats (snake case, lowercased
 // emails, etc.) so we centralise the logic here instead of scattering it
 // across pages/components.
-function normalizeAuthPayload<T extends object>(p: T): T {
-  const base: Record<string, unknown> = {};
+type AuthPayload = {
+  email?: string;
+  password?: string;
+  name?: string;
+  role?: string;
+  phone?: string;
+  clientName?: string;
+  clientEmail?: string;
+  clientPhone?: string;
+};
 
-  // common fields
-  if ((p as any).email && typeof (p as any).email === 'string') {
-    base.email = (p as any).email.trim().toLowerCase();
-  }
-  if ((p as any).password && typeof (p as any).password === 'string') {
-    base.password = (p as any).password.trim();
-  }
+function normalizeAuthPayload<T extends AuthPayload>(p: T): T {
+  const base: Partial<AuthPayload> = {};
 
-  // additional registration properties
-  if ((p as any).name && typeof (p as any).name === 'string') {
-    base.name = (p as any).name.trim();
-  }
-  if ((p as any).role) {
-    base.role = (p as any).role;
-  }
-  if ((p as any).phone && typeof (p as any).phone === 'string') {
-    base.phone = (p as any).phone.trim();
+  if (p.email) {
+    base.email = p.email.trim().toLowerCase();
   }
 
-  if ((p as any).clientName) {
-    base.clientName = (p as any).clientName.trim();
-  }
-  if ((p as any).clientEmail) {
-    base.clientEmail = ('' + (p as any).clientEmail).trim().toLowerCase();
-  }
-  if ((p as any).clientPhone) {
-    base.clientPhone = (p as any).clientPhone.trim();
+  if (p.password) {
+    base.password = p.password.trim();
   }
 
-  return base as unknown as T;
+  if (p.name) {
+    base.name = p.name.trim();
+  }
+
+  if (p.role) {
+    base.role = p.role;
+  }
+
+  if (p.phone) {
+    base.phone = p.phone.trim();
+  }
+
+  if (p.clientName) {
+    base.clientName = p.clientName.trim();
+  }
+
+  if (p.clientEmail) {
+    base.clientEmail = p.clientEmail.trim().toLowerCase();
+  }
+
+  if (p.clientPhone) {
+    base.clientPhone = p.clientPhone.trim();
+  }
+
+  return base as T;
 }
 
 export const authApi = {

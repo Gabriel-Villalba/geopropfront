@@ -21,6 +21,8 @@ export function Login() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
+  const redirect = searchParams.get('redirect');
+
   useEffect(() => {
     const resetStatus = searchParams.get('reset');
     if (resetStatus === 'success') {
@@ -42,7 +44,7 @@ export function Login() {
     try {
       if (mode === 'login') {
         await login({ email: normalizedEmail, password: normalizedPassword });
-        navigate('/dashboard');
+        navigate(redirect || '/dashboard');
       } else if (mode === 'register') {
         await register({
           name: normalizedName,
@@ -51,7 +53,7 @@ export function Login() {
           clientName: normalizedName,
           role: 'agent',
         });
-        navigate('/dashboard');
+        navigate(redirect || '/dashboard');
       } else {
         await authApi.forgotPassword(normalizedEmail);
         setInfo('Revisa tu correo si la cuenta existe.');
@@ -204,7 +206,9 @@ export function Login() {
                 onClick={() => setModeSafe(mode === 'login' ? 'register' : 'login')}
                 className="mt-2 text-xs text-orange-700 hover:text-orange-800 underline"
               >
-                {mode === 'login' ? 'No tienes cuenta? Crear cuenta' : 'Ya tienes cuenta? Iniciar sesion'}
+                {mode === 'login'
+                  ? 'No tienes cuenta? Crear cuenta'
+                  : 'Ya tienes cuenta? Iniciar sesion'}
               </button>
             ) : (
               <button
@@ -216,7 +220,9 @@ export function Login() {
               </button>
             )}
 
-            <p className="mt-2 text-xs text-gray-500">Usa tus credenciales reales del backend.</p>
+            <p className="mt-2 text-xs text-gray-500">
+              Usa tus credenciales reales del backend.
+            </p>
           </div>
         </div>
       </div>

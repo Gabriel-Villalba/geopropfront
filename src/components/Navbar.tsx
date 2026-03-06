@@ -29,6 +29,13 @@ export function Navbar() {
         : String(user?.roleId ?? '');
 
   const isAdmin = normalizedRole.toLowerCase() === 'admin';
+  const getInitials = (name?: string) => {
+  if (!name) return '';
+  const parts = name.trim().split(' ');
+  const first = parts[0]?.[0] ?? '';
+  const last = parts.length > 1 ? parts[parts.length - 1][0] : '';
+  return (first + last).toUpperCase();
+};
 
   return (
     <nav className="fixed top-0 left-0 w-full z-50 bg-orange-600 shadow-md">
@@ -84,12 +91,19 @@ export function Navbar() {
                   </button>
                 )}
                <button
-                  onClick={() => navigate('/panel')}
-                  title="Ir a mi perfil"
-                  className="text-sm text-white hidden sm:block hover:opacity-80 transition-opacity"
-                >
-                  {user?.name}
-                </button>
+                      onClick={() => navigate('/panel')}
+                      title="Ir a mi perfil"
+                      className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-orange-400 flex items-center justify-center text-xs font-semibold text-white">
+                        {getInitials(user?.name)}
+                      </div>
+
+                      {/* <span className="text-sm text-white hidden sm:block">
+                        {user?.name}
+                      </span> */}
+                    </button>
+
                 <button
                   onClick={handleLogout}
                   className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-white hover:opacity-80 transition-opacity"
