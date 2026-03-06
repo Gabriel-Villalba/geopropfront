@@ -23,7 +23,7 @@ export function PropertyTypeStep({ state, updateField }: StepProps) {
               key={option.value}
               type="button"
               onClick={() => updateField('propertyType', option.value)}
-              className={`rounded-xl border p-4 text-left transition ${
+              className={` border p-4 text-left transition ${
                 selected
                   ? 'border-blue-500 bg-blue-50 text-blue-900'
                   : 'border-slate-200 bg-white text-slate-800 hover:border-blue-300'

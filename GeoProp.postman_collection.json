@@ -1,0 +1,499 @@
+{
+  "info": {
+    "_postman_id": "0dd841ff-4a06-4b1d-b35f-3f65a459fce4",
+    "name": "GeoProp API - Plans (FREE | INMOBILIARIA | BROKER)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Coleccion para validar endpoints nuevos de /me, /properties y /alerts con reglas por plan."
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3001/api" },
+    { "key": "adminEmail", "value": "admin@geoprop.dev" },
+    { "key": "adminPassword", "value": "123456" },
+    { "key": "freeEmail", "value": "free@geoprop.dev" },
+    { "key": "freePassword", "value": "123456" },
+    { "key": "inmoEmail", "value": "inmo@geoprop.dev" },
+    { "key": "inmoPassword", "value": "123456" },
+    { "key": "brokerEmail", "value": "broker@geoprop.dev" },
+    { "key": "brokerPassword", "value": "123456" },
+    { "key": "cityId", "value": "REEMPLAZAR_UUID_CITY" },
+    { "key": "tokenAdmin", "value": "" },
+    { "key": "tokenFree", "value": "" },
+    { "key": "tokenInmobiliaria", "value": "" },
+    { "key": "tokenBroker", "value": "" },
+    { "key": "freeUserId", "value": "" },
+    { "key": "inmoUserId", "value": "" },
+    { "key": "brokerUserId", "value": "" },
+    { "key": "freePropertyId", "value": "" },
+    { "key": "freePropertyId2", "value": "" },
+    { "key": "inmoPropertyId", "value": "" },
+    { "key": "brokerPropertyId", "value": "" },
+    { "key": "freeAlertId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "0) Setup Auth",
+      "item": [
+        {
+          "name": "Login Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('tokenAdmin', json?.data?.token || '');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/login"
+          }
+        },
+        {
+          "name": "Login FREE",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('tokenFree', json?.data?.token || '');",
+                  "pm.collectionVariables.set('freeUserId', json?.data?.user?.id || '');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{freeEmail}}\",\n  \"password\": \"{{freePassword}}\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/login"
+          }
+        },
+        {
+          "name": "Login INMOBILIARIA",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('tokenInmobiliaria', json?.data?.token || '');",
+                  "pm.collectionVariables.set('inmoUserId', json?.data?.user?.id || '');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{inmoEmail}}\",\n  \"password\": \"{{inmoPassword}}\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/login"
+          }
+        },
+        {
+          "name": "Login BROKER",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('tokenBroker', json?.data?.token || '');",
+                  "pm.collectionVariables.set('brokerUserId', json?.data?.user?.id || '');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{brokerEmail}}\",\n  \"password\": \"{{brokerPassword}}\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/login"
+          }
+        }
+      ]
+    },
+    {
+      "name": "1) Setup Plan (Admin)",
+      "item": [
+        {
+          "name": "Set INMOBILIARIA plan",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plan\": \"INMOBILIARIA\"\n}"
+            },
+            "url": "{{baseUrl}}/users/{{inmoUserId}}"
+          }
+        },
+        {
+          "name": "Set BROKER plan",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plan\": \"BROKER\"\n}"
+            },
+            "url": "{{baseUrl}}/users/{{brokerUserId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2) Me",
+      "item": [
+        {
+          "name": "GET /me (FREE)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenFree}}" }],
+            "url": "{{baseUrl}}/me"
+          }
+        },
+        {
+          "name": "GET /me (INMOBILIARIA)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenInmobiliaria}}" }],
+            "url": "{{baseUrl}}/me"
+          }
+        },
+        {
+          "name": "GET /me (BROKER)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenBroker}}" }],
+            "url": "{{baseUrl}}/me"
+          }
+        },
+        {
+          "name": "GET /me/properties (FREE)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenFree}}" }],
+            "url": "{{baseUrl}}/me/properties"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3) FREE - Properties + Alerts",
+      "item": [
+        {
+          "name": "POST /properties (FREE #1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('freePropertyId', json?.data?.id || '');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenFree}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cityId\": \"{{cityId}}\",\n  \"title\": \"FREE - Casa 1\",\n  \"description\": \"Propiedad de prueba FREE\",\n  \"operation\": \"sale\",\n  \"propertyType\": \"house\",\n  \"price\": 120000,\n  \"currency\": \"USD\",\n  \"address\": \"Calle 100\",\n  \"ownerType\": \"particular\",\n  \"contactName\": \"Free User\",\n  \"contactPhone\": \"+5491111111111\",\n  \"isFeatured\": false,\n  \"source\": \"internal\"\n}"
+            },
+            "url": "{{baseUrl}}/properties"
+          }
+        },
+        {
+          "name": "PATCH /properties/:id/activate (FREE #1 -> success)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenFree}}" }],
+            "url": "{{baseUrl}}/properties/{{freePropertyId}}/activate"
+          }
+        },
+        {
+          "name": "POST /properties (FREE #2)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('freePropertyId2', json?.data?.id || '');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenFree}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cityId\": \"{{cityId}}\",\n  \"title\": \"FREE - Casa 2\",\n  \"description\": \"Segunda propiedad FREE\",\n  \"operation\": \"sale\",\n  \"propertyType\": \"house\",\n  \"price\": 130000,\n  \"currency\": \"USD\",\n  \"address\": \"Calle 200\",\n  \"ownerType\": \"particular\",\n  \"contactName\": \"Free User\",\n  \"contactPhone\": \"+5491111111111\",\n  \"isFeatured\": false,\n  \"source\": \"internal\"\n}"
+            },
+            "url": "{{baseUrl}}/properties"
+          }
+        },
+        {
+          "name": "PATCH /properties/:id/activate (FREE #2 -> expected 409)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenFree}}" }],
+            "url": "{{baseUrl}}/properties/{{freePropertyId2}}/activate"
+          }
+        },
+        {
+          "name": "PATCH /properties/:id/deactivate (FREE #1)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenFree}}" }],
+            "url": "{{baseUrl}}/properties/{{freePropertyId}}/deactivate"
+          }
+        },
+        {
+          "name": "DELETE /properties/:id (FREE #2 soft delete)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenFree}}" }],
+            "url": "{{baseUrl}}/properties/{{freePropertyId2}}"
+          }
+        },
+        {
+          "name": "POST /alerts (FREE #1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('freeAlertId', json?.data?.id || '');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenFree}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operation\": \"rent\",\n  \"cityId\": \"{{cityId}}\",\n  \"minPrice\": 500,\n  \"maxPrice\": 1200,\n  \"propertyType\": \"apartment\",\n  \"rooms\": 2\n}"
+            },
+            "url": "{{baseUrl}}/alerts"
+          }
+        },
+        {
+          "name": "POST /alerts (FREE #2 -> expected 409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenFree}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operation\": \"sale\",\n  \"cityId\": \"{{cityId}}\",\n  \"minPrice\": 60000,\n  \"maxPrice\": 150000,\n  \"propertyType\": \"house\"\n}"
+            },
+            "url": "{{baseUrl}}/alerts"
+          }
+        },
+        {
+          "name": "PATCH /alerts/:id/deactivate (FREE #1)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenFree}}" }],
+            "url": "{{baseUrl}}/alerts/{{freeAlertId}}/deactivate"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4) INMOBILIARIA - Properties + Alerts",
+      "item": [
+        {
+          "name": "POST /properties (INMOBILIARIA)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('inmoPropertyId', json?.data?.id || '');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenInmobiliaria}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cityId\": \"{{cityId}}\",\n  \"title\": \"INMO - Local\",\n  \"description\": \"Propiedad INMOBILIARIA\",\n  \"operation\": \"rent\",\n  \"propertyType\": \"local_commercial\",\n  \"price\": 2500,\n  \"currency\": \"USD\",\n  \"address\": \"Av. Principal 123\",\n  \"ownerType\": \"inmobiliaria\",\n  \"contactName\": \"Inmo User\",\n  \"contactPhone\": \"+5491122222222\",\n  \"isFeatured\": true,\n  \"source\": \"internal\"\n}"
+            },
+            "url": "{{baseUrl}}/properties"
+          }
+        },
+        {
+          "name": "PATCH /properties/:id/activate (INMOBILIARIA -> pending)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenInmobiliaria}}" }],
+            "url": "{{baseUrl}}/properties/{{inmoPropertyId}}/activate"
+          }
+        },
+        {
+          "name": "GET /properties (INMOBILIARIA)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenInmobiliaria}}" }],
+            "url": "{{baseUrl}}/properties"
+          }
+        },
+        {
+          "name": "POST /alerts (INMOBILIARIA #1)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenInmobiliaria}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operation\": \"rent\",\n  \"cityId\": \"{{cityId}}\",\n  \"minPrice\": 700,\n  \"maxPrice\": 1800,\n  \"propertyType\": \"apartment\",\n  \"rooms\": 2\n}"
+            },
+            "url": "{{baseUrl}}/alerts"
+          }
+        },
+        {
+          "name": "POST /alerts (INMOBILIARIA #2 - unlimited)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenInmobiliaria}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operation\": \"sale\",\n  \"cityId\": \"{{cityId}}\",\n  \"minPrice\": 80000,\n  \"maxPrice\": 200000,\n  \"propertyType\": \"house\"\n}"
+            },
+            "url": "{{baseUrl}}/alerts"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5) BROKER - Properties + Alerts",
+      "item": [
+        {
+          "name": "POST /properties (BROKER)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('brokerPropertyId', json?.data?.id || '');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenBroker}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cityId\": \"{{cityId}}\",\n  \"title\": \"BROKER - Departamento\",\n  \"description\": \"Propiedad BROKER\",\n  \"operation\": \"sale\",\n  \"propertyType\": \"apartment\",\n  \"price\": 98000,\n  \"currency\": \"USD\",\n  \"address\": \"Calle Broker 50\",\n  \"ownerType\": \"inmobiliaria\",\n  \"contactName\": \"Broker User\",\n  \"contactPhone\": \"+5491133333333\",\n  \"isFeatured\": true,\n  \"source\": \"internal\"\n}"
+            },
+            "url": "{{baseUrl}}/properties"
+          }
+        },
+        {
+          "name": "PATCH /properties/:id/activate (BROKER -> pending)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenBroker}}" }],
+            "url": "{{baseUrl}}/properties/{{brokerPropertyId}}/activate"
+          }
+        },
+        {
+          "name": "POST /alerts (BROKER #1)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenBroker}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operation\": \"rent\",\n  \"cityId\": \"{{cityId}}\",\n  \"minPrice\": 1000,\n  \"maxPrice\": 3000,\n  \"propertyType\": \"local_commercial\"\n}"
+            },
+            "url": "{{baseUrl}}/alerts"
+          }
+        },
+        {
+          "name": "POST /alerts (BROKER #2 - unlimited)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenBroker}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operation\": \"sale\",\n  \"cityId\": \"{{cityId}}\",\n  \"minPrice\": 90000,\n  \"maxPrice\": 350000,\n  \"propertyType\": \"land\"\n}"
+            },
+            "url": "{{baseUrl}}/alerts"
+          }
+        }
+      ]
+    }
+  ]
+}

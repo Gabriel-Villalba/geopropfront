@@ -68,13 +68,13 @@ export default function CreateAlertPage() {
           Volver al panel
         </button>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <section className=" border border-slate-200 bg-white p-6 shadow-sm">
           <h1 className="text-xl font-semibold text-slate-900">Crear alerta</h1>
           <p className="mt-1 text-sm text-slate-600">Define criterios para recibir nuevas oportunidades.</p>
 
           {message && (
             <div
-              className={`mt-4 rounded-xl border px-4 py-3 text-sm ${
+              className={`mt-4 border px-4 py-3 text-sm ${
                 message.type === 'success'
                   ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
                   : 'border-rose-200 bg-rose-50 text-rose-700'
@@ -90,12 +90,12 @@ export default function CreateAlertPage() {
               placeholder="City ID (UUID)"
               value={draft.cityId}
               onChange={(event) => setDraft((prev) => ({ ...prev, cityId: event.target.value }))}
-              className="rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500 sm:col-span-2"
+              className=" border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500 sm:col-span-2"
             />
             <select
               value={draft.operation}
               onChange={(event) => setDraft((prev) => ({ ...prev, operation: event.target.value as AlertDraft['operation'] }))}
-              className="rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
+              className=" border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
             >
               <option value="sale">Venta</option>
               <option value="rent">Alquiler</option>
@@ -103,7 +103,7 @@ export default function CreateAlertPage() {
             <select
               value={draft.propertyType}
               onChange={(event) => setDraft((prev) => ({ ...prev, propertyType: event.target.value as AlertDraft['propertyType'] }))}
-              className="rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
+              className=" border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
             >
               <option value="house">Casa</option>
               <option value="apartment">Departamento</option>
@@ -115,27 +115,27 @@ export default function CreateAlertPage() {
               placeholder="Precio minimo"
               value={draft.minPrice}
               onChange={(event) => setDraft((prev) => ({ ...prev, minPrice: event.target.value }))}
-              className="rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
+              className=" border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
             />
             <input
               type="number"
               placeholder="Precio maximo"
               value={draft.maxPrice}
               onChange={(event) => setDraft((prev) => ({ ...prev, maxPrice: event.target.value }))}
-              className="rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
+              className=" border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
             />
             <input
               type="number"
               placeholder="Ambientes"
               value={draft.rooms}
               onChange={(event) => setDraft((prev) => ({ ...prev, rooms: event.target.value }))}
-              className="rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
+              className=" border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
             />
 
             <button
               type="submit"
               disabled={isSavingAlert}
-              className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+              className="w-full bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
             >
               {isSavingAlert ? 'Guardando...' : 'Crear alerta'}
             </button>
@@ -148,7 +148,7 @@ export default function CreateAlertPage() {
               <p className="text-sm text-slate-600">No tenes alertas registradas.</p>
             ) : (
               alerts.map((alert) => (
-                <div key={alert.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 p-3">
+                <div key={alert.id} className="flex flex-wrap items-center justify-between gap-2  border border-slate-200 p-3">
                   <div className="text-sm text-slate-700">
                     {alert.operation} - {alert.propertyType} - {alert.city?.name ?? alert.cityId}
                   </div>
@@ -156,7 +156,7 @@ export default function CreateAlertPage() {
                     type="button"
                     onClick={() => void deactivateAlert(alert.id)}
                     disabled={!alert.active}
-                    className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    className=" border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {alert.active ? 'Desactivar' : 'Inactiva'}
                   </button>

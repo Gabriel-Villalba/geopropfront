@@ -43,7 +43,7 @@ export function ImageUploadStep({ state, updateField }: StepProps) {
         <p className="text-sm text-slate-600">Paso opcional: puedes cargar imagenes para previsualizar antes de publicar.</p>
       </div>
 
-      <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm font-medium text-slate-700 transition hover:border-blue-400 hover:text-blue-700">
+      <label className="flex cursor-pointer items-center justify-center gap-2  border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm font-medium text-slate-700 transition hover:border-blue-400 hover:text-blue-700">
         <UploadCloud className="h-5 w-5" />
         Seleccionar imagenes
         <input type="file" multiple accept="image/*" className="hidden" onChange={(event) => handleFiles(event.target.files)} />
@@ -54,7 +54,7 @@ export function ImageUploadStep({ state, updateField }: StepProps) {
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {previews.map((preview) => (
-            <article key={preview.key} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <article key={preview.key} className="overflow-hidden  border border-slate-200 bg-white">
               <img src={preview.url} alt={preview.name} className="h-24 w-full object-cover" />
               <div className="flex items-center justify-between gap-2 p-2">
                 <p className="truncate text-xs text-slate-600">{preview.name}</p>

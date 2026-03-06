@@ -158,6 +158,40 @@ export const propertyApi = {
     const response = await api.post<BackendApiResponse<BackendProperty>>('/properties', payload);
     return extractApiData(response);
   },
+  uploadImage: async (
+    propertyId: string,
+    imageFile: File,
+  ): Promise<{
+    id: string;
+    propertyId: string;
+    imageUrl: string;
+    displayOrder: number;
+    publicId: string;
+    isPrimary: boolean;
+    createdAt: string;
+  }> => {
+    const formData = new FormData();
+    formData.append('image', imageFile);
+
+    const response = await api.post<
+      BackendApiResponse<{
+        id: string;
+        propertyId: string;
+        imageUrl: string;
+        displayOrder: number;
+        publicId: string;
+        isPrimary: boolean;
+        createdAt: string;
+      }>
+    >(`/properties/${propertyId}/images`, formData);
+    return extractApiData(response);
+  },
+  deleteImage: async (propertyId: string, imageId: string): Promise<{ id: string; propertyId: string }> => {
+    const response = await api.delete<BackendApiResponse<{ id: string; propertyId: string }>>(
+      `/properties/${propertyId}/images/${imageId}`,
+    );
+    return extractApiData(response);
+  },
   update: async (id: string, payload: Record<string, unknown>): Promise<BackendProperty> => {
     const response = await api.put<BackendApiResponse<BackendProperty>>(`/properties/${id}`, payload);
     return extractApiData(response);

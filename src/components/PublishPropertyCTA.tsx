@@ -20,7 +20,6 @@ export function PublishPropertyCTA() {
       onClick={handleClick}
       className="
         inline-flex items-center justify-center gap-2
-        rounded-2xl
         bg-blue-600
         px-5 py-3
         text-sm font-semibold text-white

@@ -35,7 +35,7 @@ export function DetailsStep({ state, updateField }: StepProps) {
               min={0}
               value={state.dormitorios ?? ''}
               onChange={(event) => updateField('dormitorios', toNumberOrUndefined(event.target.value))}
-              className="rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
+              className=" border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
             />
           </label>
         )}
@@ -48,7 +48,7 @@ export function DetailsStep({ state, updateField }: StepProps) {
               min={0}
               value={state.banos ?? ''}
               onChange={(event) => updateField('banos', toNumberOrUndefined(event.target.value))}
-              className="rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
+              className=" border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
             />
           </label>
         )}
@@ -66,7 +66,7 @@ export function DetailsStep({ state, updateField }: StepProps) {
 
                 updateField('cochera', event.target.value === 'true');
               }}
-              className="rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
+              className=" border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
             >
               <option value="">Seleccionar</option>
               <option value="true">Si</option>
@@ -82,7 +82,7 @@ export function DetailsStep({ state, updateField }: StepProps) {
             min={1}
             value={state.metrosCuadrados ?? ''}
             onChange={(event) => updateField('metrosCuadrados', toNumberOrUndefined(event.target.value))}
-            className="rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
+            className=" border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
           />
         </label>
 
@@ -93,7 +93,7 @@ export function DetailsStep({ state, updateField }: StepProps) {
             min={1}
             value={state.precio ?? ''}
             onChange={(event) => updateField('precio', toNumberOrUndefined(event.target.value) ?? null)}
-            className="rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
+            className=" border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
           />
         </label>
 
@@ -102,7 +102,7 @@ export function DetailsStep({ state, updateField }: StepProps) {
           <input
             value={state.ciudad}
             onChange={(event) => updateField('ciudad', event.target.value)}
-            className="rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
+            className=" border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
           />
         </label>
 
@@ -111,7 +111,7 @@ export function DetailsStep({ state, updateField }: StepProps) {
           <input
             value={state.direccion}
             onChange={(event) => updateField('direccion', event.target.value)}
-            className="rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
+            className=" border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
           />
         </label>
 
@@ -120,7 +120,7 @@ export function DetailsStep({ state, updateField }: StepProps) {
           <input
             value={state.telefonoContacto}
             onChange={(event) => updateField('telefonoContacto', event.target.value)}
-            className="rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
+            className=" border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
           />
         </label>
 
@@ -130,7 +130,7 @@ export function DetailsStep({ state, updateField }: StepProps) {
             rows={4}
             value={state.descripcion}
             onChange={(event) => updateField('descripcion', event.target.value)}
-            className="rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
+            className=" border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
           />
         </label>
       </div>

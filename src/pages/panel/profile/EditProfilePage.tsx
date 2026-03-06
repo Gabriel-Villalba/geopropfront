@@ -40,13 +40,13 @@ export default function EditProfilePage() {
           Volver al panel
         </button>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <section className=" border border-slate-200 bg-white p-6 shadow-sm">
           <h1 className="text-xl font-semibold text-slate-900">Editar perfil</h1>
           <p className="mt-1 text-sm text-slate-600">Gestion basica del perfil y plan de la cuenta.</p>
 
           {message && (
             <div
-              className={`mt-4 rounded-xl border px-4 py-3 text-sm ${
+              className={`mt-4 border px-4 py-3 text-sm ${
                 message.type === 'success'
                   ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
                   : 'border-rose-200 bg-rose-50 text-rose-700'
@@ -61,21 +61,21 @@ export default function EditProfilePage() {
           ) : (
             <>
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <div className=" border border-slate-200 bg-slate-50 p-4">
                   <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
                     <UserRound className="h-4 w-4" />
                     Nombre actual
                   </div>
                   <p className="mt-2 text-sm text-slate-900">{profile?.name ?? 'No disponible'}</p>
                 </div>
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <div className=" border border-slate-200 bg-slate-50 p-4">
                   <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
                     <Mail className="h-4 w-4" />
                     Email
                   </div>
                   <p className="mt-2 text-sm text-slate-900">{profile?.email ?? 'No disponible'}</p>
                 </div>
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 sm:col-span-2">
+                <div className=" border border-slate-200 bg-slate-50 p-4 sm:col-span-2">
                   <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
                     <BadgeCheck className="h-4 w-4" />
                     Plan
@@ -91,7 +91,7 @@ export default function EditProfilePage() {
                     value={displayName}
                     onChange={(event) => setDisplayName(event.target.value)}
                     placeholder="Tu nombre visible"
-                    className="rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500"
+                    className=" border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500"
                   />
                 </label>
 
@@ -101,14 +101,14 @@ export default function EditProfilePage() {
                     value={contactPhone}
                     onChange={(event) => setContactPhone(event.target.value)}
                     placeholder="Ej: +54 9 3492 ..."
-                    className="rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500"
+                    className=" border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500"
                   />
                 </label>
 
                 <button
                   type="button"
                   onClick={handleSave}
-                  className="mt-2 w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 sm:w-auto"
+                  className="mt-2 w-full  bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 sm:w-auto"
                 >
                   Guardar cambios (simulado)
                 </button>

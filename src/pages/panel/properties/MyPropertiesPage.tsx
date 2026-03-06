@@ -24,6 +24,7 @@ export default function MyPropertiesPage() {
     deactivateProperty,
     approveProperty,
     deleteProperty,
+    deletePropertyImage,
   } = useOwnerPanel();
 
   useEffect(() => {
@@ -136,6 +137,34 @@ export default function MyPropertiesPage() {
                     >
                       Eliminar
                     </button>
+                  </div>
+
+                  <div className="mt-4">
+                    {entry.images && entry.images.length > 0 ? (
+                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                        {entry.images
+                          .slice()
+                          .sort((a, b) => a.order - b.order)
+                          .map((image) => (
+                            <article key={image.id} className="rounded-lg border border-slate-200 bg-slate-50 p-2">
+                              <img
+                                src={image.imageUrl}
+                                alt={`Imagen de ${entry.title}`}
+                                className="h-24 w-full rounded-md object-cover"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => void deletePropertyImage(entry.id, image.id)}
+                                className="mt-2 w-full rounded-md border border-rose-300 px-2 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-50"
+                              >
+                                Eliminar imagen
+                              </button>
+                            </article>
+                          ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-slate-500">Sin imagenes cargadas.</p>
+                    )}
                   </div>
                 </article>
               ))}

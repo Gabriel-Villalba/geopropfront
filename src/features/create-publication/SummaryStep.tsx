@@ -28,7 +28,7 @@ export function SummaryStep({ state }: StepProps) {
         <p className="text-sm text-slate-600">Revisa los datos antes de confirmar la publicacion.</p>
       </div>
 
-      <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+      <div className="space-y-2  border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
         <p>
           <span className="font-semibold text-slate-900">Operacion:</span> {displayOperation(state.operation)}
         </p>

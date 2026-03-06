@@ -28,10 +28,10 @@ export function OperationStep({ state, updateField }: StepProps) {
               key={option.value}
               type="button"
               onClick={() => updateField('operation', option.value)}
-              className={`rounded-xl border p-4 text-left transition ${
+              className={` border p-4 text-left transition ${
                 selected
-                  ? 'border-blue-500 bg-blue-50 text-blue-900'
-                  : 'border-slate-200 bg-white text-slate-800 hover:border-blue-300'
+                  ? 'border-orange-500 bg-orange-100 text-orange-900'
+                  : 'border-orange-500 bg-white text-slate-800 hover:border-orange-300'
               }`}
             >
               <p className="text-base font-semibold">{option.title}</p>

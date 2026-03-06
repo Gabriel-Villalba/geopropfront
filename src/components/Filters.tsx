@@ -14,13 +14,17 @@ interface FiltersProps {
 type DropdownType = 'price' | 'operation' | 'type' | 'advanced' | null;
 
 const baseButton =
-  'w-full md:w-44 text-center rounded-xl border border-orange-500 px-4 py-3 text-sm font-semibold transition';
+  'w-full md:w-44 text-center  border border-orange-500 px-4 py-3 text-sm font-semibold transition';
 
-const typeLabel: Record<NonNullable<FiltersFormState['type']>, string> = {
-  '': 'Tipo',
+type ValidPropertyType = Exclude<
+  FiltersFormState['type'],
+  ''
+>;
+
+const typeLabel: Record<ValidPropertyType, string> = {
   casa: 'Casa',
   departamento: 'Departamento',
-  comercial: 'Comercial',
+  comercial: 'Local Comercial',
   lote: 'Lote',
   'galpon-deposito': 'Galpón/Depósito',
 };
@@ -47,7 +51,7 @@ export function Filters({ filters, onChange, onSubmit, onReset, isLoading }: Fil
         event.preventDefault();
         onSubmit();
       }}
-      className="relative rounded-2xl bg-white p-4 shadow"
+      className="relative bg-white p-4 shadow"
     >
       <div className="flex flex-col gap-4 md:flex-row md:items-end">
         <div className="relative">
@@ -55,7 +59,7 @@ export function Filters({ filters, onChange, onSubmit, onReset, isLoading }: Fil
             type="button"
             onClick={() => setOpenDropdown(openDropdown === 'operation' ? null : 'operation')}
             className={`${baseButton} ${
-              openDropdown === 'operation' ? 'bg-orange-500 text-white' : 'bg-white text-gray-700 hover:bg-orange-50'
+              openDropdown === 'operation' ? 'bg-orange-500 text-white rounded-none' : 'bg-white text-gray-700 hover:bg-orange-50 rounded-none'
             }`}
           >
             {filters.operation === 'venta' ? 'Comprar' : 'Alquilar'}
@@ -69,11 +73,11 @@ export function Filters({ filters, onChange, onSubmit, onReset, isLoading }: Fil
                 exit={{ opacity: 0, scaleY: 0 }}
                 transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
                 style={{ transformOrigin: 'top' }}
-                className="absolute left-0 z-50 mt-2 w-48 bg-orange-500 p-2 shadow-lg"
+                className="absolute left-0 z-50 mt-2 w-48 bg-orange-500 p-2 shadow-lg rounded-none"
               >
                 {[
-                  { value: 'sale', label: 'Comprar' },
-                  { value: 'rent', label: 'Alquilar' },
+                  { value: 'venta', label: 'Comprar' },
+                  { value: 'alquiler', label: 'Alquilar' },
                 ].map((operation) => (
                   <button
                     key={operation.value}
@@ -82,7 +86,7 @@ export function Filters({ filters, onChange, onSubmit, onReset, isLoading }: Fil
                       onChange('operation', operation.value);
                       setOpenDropdown(null);
                     }}
-                    className="w-full px-3 py-2 text-center text-sm text-white transition hover:bg-orange-400"
+                    className="w-full px-3 py-2 text-center text-sm text-white transition hover:bg-orange-400 rounded-none"
                   >
                     {operation.label}
                   </button>
@@ -97,10 +101,10 @@ export function Filters({ filters, onChange, onSubmit, onReset, isLoading }: Fil
             type="button"
             onClick={() => setOpenDropdown(openDropdown === 'type' ? null : 'type')}
             className={`${baseButton} ${
-              openDropdown === 'type' ? 'bg-orange-500 text-white' : 'bg-white text-gray-700 hover:bg-orange-50'
+              openDropdown === 'type' ? 'bg-orange-500 text-white rounded-none' : 'bg-white text-gray-700 hover:bg-orange-50 rounded-none'
             }`}
           >
-            {typeLabel[filters.type]}
+            {filters.type ? typeLabel[filters.type] : 'Tipo'}
           </button>
 
           <AnimatePresence>
@@ -114,11 +118,11 @@ export function Filters({ filters, onChange, onSubmit, onReset, isLoading }: Fil
                 className="absolute left-0 z-50 mt-2 w-56 bg-orange-500 p-2 shadow-lg"
               >
                 {[
-                  { value: 'house', label: 'Casa' },
-                  { value: 'apartment', label: 'Departamento' },
-                  { value: 'commercial', label: 'Local Comercial' },
-                  { value: 'land', label: 'Lote' },
-                   { value: 'galpon-deposito', label: 'Galpón/Depósito' },
+                  { value: 'casa', label: 'Casa' },
+                  { value: 'departamento', label: 'Departamento' },
+                  { value: 'comercial', label: 'Local Comercial' },
+                  { value: 'lote', label: 'Lote' },
+                  { value: 'galpon-deposito', label: 'Galpón/Depósito' },
                 ].map((item) => (
                   <button
                     key={item.value}
@@ -143,7 +147,7 @@ export function Filters({ filters, onChange, onSubmit, onReset, isLoading }: Fil
             type="text"
             value={filters.city}
             disabled
-            className="w-full cursor-not-allowed rounded-xl border bg-gray-100 px-9 py-2 text-sm text-gray-600"
+            className="w-full cursor-not-allowed  border border-orange-500 bg-gray-100 px-4 py-3 text-center text-sm text-gray-600 rounded-none"
           />
         </div>
 
@@ -152,7 +156,7 @@ export function Filters({ filters, onChange, onSubmit, onReset, isLoading }: Fil
             type="button"
             onClick={() => setOpenDropdown(openDropdown === 'price' ? null : 'price')}
             className={`${baseButton} ${
-              openDropdown === 'price' ? 'bg-orange-500 text-white' : 'bg-white text-gray-700 hover:bg-orange-50'
+              openDropdown === 'price' ? 'bg-orange-500 text-white rounded-none' : 'bg-white text-gray-700 hover:bg-orange-50 rounded-none'
             }`}
           >
             Precio
@@ -195,7 +199,7 @@ export function Filters({ filters, onChange, onSubmit, onReset, isLoading }: Fil
             type="button"
             onClick={() => setOpenDropdown(openDropdown === 'advanced' ? null : 'advanced')}
             className={`${baseButton} ${
-              openDropdown === 'advanced' ? 'bg-orange-500 text-white' : 'bg-white text-gray-700 hover:bg-orange-50'
+              openDropdown === 'advanced' ? 'bg-orange-500 text-white rounded-none' : 'bg-white text-gray-700 hover:bg-orange-50 rounded-none'
             }`}
           >
             Mas filtros
@@ -275,7 +279,7 @@ export function Filters({ filters, onChange, onSubmit, onReset, isLoading }: Fil
         <button
           type="button"
           onClick={onReset}
-          className="w-full rounded-xl border border-gray-300 px-4 py-3 text-center text-sm font-semibold text-gray-700 transition hover:bg-gray-100 md:w-32"
+          className="w-full  border border-orange-500 px-4 py-3 text-center text-sm font-semibold text-gray-700 transition hover:bg-gray-100 md:w-32"
         >
           Limpiar
         </button>
@@ -283,7 +287,7 @@ export function Filters({ filters, onChange, onSubmit, onReset, isLoading }: Fil
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full rounded-xl bg-orange-500 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-orange-600 disabled:opacity-60 md:w-44"
+          className="w-full bg-orange-500 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-orange-600 disabled:opacity-60 md:w-44"
         >
           {isLoading ? 'Buscando...' : 'Buscar'}
         </button>

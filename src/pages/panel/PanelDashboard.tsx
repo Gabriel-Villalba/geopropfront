@@ -64,10 +64,10 @@ export default function PanelDashboard() {
                 key={card.id}
                 type="button"
                 onClick={() => navigate(card.to)}
-                className="group rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                className="group  border border-orange-500 bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-orange-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
               >
                 <div className="flex items-start justify-between gap-3">
-                  <div className="rounded-xl bg-blue-50 p-3 text-blue-600">
+                  <div className=" bg-blue-50 p-3 text-blue-600">
                     <Icon className="h-6 w-6" />
                   </div>
                   <ChevronRight className="h-5 w-5 text-slate-400 transition group-hover:text-blue-500" />

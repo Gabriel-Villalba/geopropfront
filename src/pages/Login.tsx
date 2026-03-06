@@ -74,7 +74,7 @@ export function Login() {
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="bg-orange-500 p-3 rounded-2xl">
+            <div className="bg-orange-500 p-3 ">
               <Building2 className="w-10 h-10 text-white" />
             </div>
           </div>
@@ -134,7 +134,7 @@ export function Login() {
                   required
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors"
                   placeholder="you@example.com"
                 />
               </div>
@@ -155,7 +155,7 @@ export function Login() {
                     required
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
-                    className="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors"
+                    className="block w-full pl-10 pr-12 py-3 border border-gray-300  focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors"
                     placeholder="********"
                   />
                   <button
@@ -173,7 +173,7 @@ export function Login() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full flex justify-center py-3 px-4 rounded-lg shadow-sm text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full flex justify-center py-3 px-4  shadow-sm text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isLoading ? (
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>

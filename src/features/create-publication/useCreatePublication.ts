@@ -100,6 +100,7 @@ export function useCreatePublication() {
   const [state, setState] = useState<CreatePublicationState>(initialState);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitWarning, setSubmitWarning] = useState<string | null>(null);
   const [createdPropertyId, setCreatedPropertyId] = useState<string | null>(null);
 
   const updateField = <K extends keyof CreatePublicationState>(field: K, value: CreatePublicationState[K]) => {
@@ -141,6 +142,7 @@ export function useCreatePublication() {
     setState(initialState);
     setIsSubmitting(false);
     setSubmitError(null);
+    setSubmitWarning(null);
     setCreatedPropertyId(null);
   };
 
@@ -152,6 +154,7 @@ export function useCreatePublication() {
 
     setIsSubmitting(true);
     setSubmitError(null);
+    setSubmitWarning(null);
 
     const normalizedOwner = ownerName?.trim() || 'Propietario';
     const normalizedCity = state.ciudad.trim();
@@ -176,7 +179,7 @@ export function useCreatePublication() {
       area: state.metrosCuadrados,
       bedrooms: state.dormitorios ?? null,
       bathrooms: state.banos ?? null,
-      parking: state.cochera === undefined ? null : state.cochera ? 1 : 0,
+      parking: state.cochera === true ? 1 : 0,
       ownerType: 'particular',
       contactName: normalizedOwner,
       contactPhone: normalizedPhone || undefined,
@@ -189,6 +192,20 @@ export function useCreatePublication() {
     try {
       const created = await propertyApi.create(payload);
       setCreatedPropertyId(created.id);
+
+      if (state.imagenes.length > 0) {
+        const uploads = await Promise.allSettled(
+          state.imagenes.map((file) => propertyApi.uploadImage(created.id, file)),
+        );
+        const failedUploads = uploads.filter((result) => result.status === 'rejected').length;
+
+        if (failedUploads > 0) {
+          setSubmitWarning(
+            `La propiedad se creo, pero ${failedUploads} de ${state.imagenes.length} imagen(es) no se pudieron subir.`,
+          );
+        }
+      }
+
       return true;
     } catch (error) {
       setSubmitError(getApiErrorMessage(error));
@@ -205,6 +222,7 @@ export function useCreatePublication() {
     isCurrentStepValid,
     isSubmitting,
     submitError,
+    submitWarning,
     createdPropertyId,
     nextStep,
     prevStep,

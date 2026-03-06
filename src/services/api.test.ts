@@ -1,4 +1,4 @@
-import api, { authApi } from './api';
+import api, { authApi, propertyApi } from './api';
 import type { RegisterCredentials, LoginCredentials } from '../types';
 
 vi.mock('./backend', () => ({
@@ -71,5 +71,25 @@ describe('authApi', () => {
       token: 'token-value',
       newPassword: 'secret123',
     });
+  });
+});
+
+describe('propertyApi', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('llama DELETE /properties/:id/images/:imageId para borrar imagen', async () => {
+    vi.spyOn(api, 'delete').mockResolvedValue({
+      data: {
+        success: true,
+        data: { id: 'img-1', propertyId: 'prop-1' },
+        error: null,
+      },
+    } as unknown);
+
+    await propertyApi.deleteImage('prop-1', 'img-1');
+
+    expect(api.delete).toHaveBeenCalledWith('/properties/prop-1/images/img-1');
   });
 });

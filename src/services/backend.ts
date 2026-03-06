@@ -35,6 +35,7 @@ export interface BackendProperty {
   bedrooms: number | null;
   bathrooms: number | null;
   area: number | null;
+  parking: number | null;
   address: string | null;
   ownerType: 'particular' | 'inmobiliaria';
   contactName: string | null;

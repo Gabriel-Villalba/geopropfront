@@ -146,6 +146,20 @@ export function useOwnerPanel() {
     [loadPanel],
   );
 
+  const deletePropertyImage = useCallback(
+    async (propertyId: string, imageId: string) => {
+      setMessage(null);
+      try {
+        await propertyApi.deleteImage(propertyId, imageId);
+        await loadPanel();
+        setMessage({ type: 'success', text: 'Imagen eliminada correctamente.' });
+      } catch (error) {
+        setMessage({ type: 'error', text: getApiErrorMessage(error) });
+      }
+    },
+    [loadPanel],
+  );
+
   const createAlert = useCallback(
     async (payload: Record<string, unknown>) => {
       setIsSavingAlert(true);
@@ -194,6 +208,7 @@ export function useOwnerPanel() {
     deactivateProperty,
     approveProperty,
     deleteProperty,
+    deletePropertyImage,
     createAlert,
     deactivateAlert,
   };

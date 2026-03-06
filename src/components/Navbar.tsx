@@ -83,9 +83,13 @@ export function Navbar() {
                     <span className="hidden sm:inline">Usuarios</span>
                   </button>
                 )}
-                <span className="text-sm text-white hidden sm:block">
+               <button
+                  onClick={() => navigate('/panel')}
+                  title="Ir a mi perfil"
+                  className="text-sm text-white hidden sm:block hover:opacity-80 transition-opacity"
+                >
                   {user?.name}
-                </span>
+                </button>
                 <button
                   onClick={handleLogout}
                   className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-white hover:opacity-80 transition-opacity"
