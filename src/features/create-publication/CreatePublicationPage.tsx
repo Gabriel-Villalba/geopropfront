@@ -9,6 +9,7 @@ import { OperationStep } from './OperationStep';
 import { PropertyTypeStep } from './PropertyTypeStep';
 import { SummaryStep } from './SummaryStep';
 import { useCreatePublication } from './useCreatePublication';
+import { useSantaFeCities } from '../../hooks/useSantaFeCities';
 
 export function CreatePublicationPage() {
   const navigate = useNavigate();
@@ -30,6 +31,7 @@ export function CreatePublicationPage() {
     reset,
     submit,
   } = useCreatePublication();
+  const { cities, isLoadingCities, citiesError, reloadCities } = useSantaFeCities();
 
   const progress = useMemo(() => Math.round((currentStep / totalSteps) * 100), [currentStep, totalSteps]);
 
@@ -125,7 +127,18 @@ export function CreatePublicationPage() {
               <div key={currentStep} className="mt-6 transition-all duration-300">
                 {currentStep === 1 && <OperationStep state={state} updateField={updateField} />}
                 {currentStep === 2 && <PropertyTypeStep state={state} updateField={updateField} />}
-                {currentStep === 3 && <DetailsStep state={state} updateField={updateField} />}
+                {currentStep === 3 && (
+                  <DetailsStep
+                    state={state}
+                    updateField={updateField}
+                    cities={cities}
+                    isLoadingCities={isLoadingCities}
+                    citiesError={citiesError}
+                    onRetryCities={() => {
+                      void reloadCities();
+                    }}
+                  />
+                )}
                 {currentStep === 4 && <ImageUploadStep state={state} updateField={updateField} />}
                 {currentStep === 5 && <SummaryStep state={state} updateField={updateField} />}
               </div>

@@ -1,10 +1,16 @@
 import axios from 'axios';
 import type {
   AuthResponse,
+  City,
+  CreatePaymentPreferencePayload,
+  ExpiringProperty,
   LoginCredentials,
+  PaymentPreference,
   Property,
   PropertyFilters,
+  Province,
   RegisterCredentials,
+  RenewListingPayload,
   User,
 } from '../types';
 import {
@@ -18,6 +24,11 @@ import {
 interface SearchPropertyResponse extends Omit<Property, 'image' | 'images'> {
   image?: string | string[] | null;
   images?: string[] | null;
+}
+
+interface MyPropertiesExtendedResponse {
+  properties: BackendProperty[];
+  expiringSoon: ExpiringProperty[];
 }
 
 function normalizeSearchProperty(property: SearchPropertyResponse): Property {
@@ -168,6 +179,10 @@ export const propertyApi = {
     const response = await api.get<BackendApiResponse<BackendProperty[]>>('/properties');
     return extractApiData(response);
   },
+  getMyPropertiesExtended: async (): Promise<MyPropertiesExtendedResponse> => {
+    const response = await api.get<BackendApiResponse<MyPropertiesExtendedResponse>>('/properties/my');
+    return extractApiData(response);
+  },
   create: async (payload: Record<string, unknown>): Promise<BackendProperty> => {
     const response = await api.post<BackendApiResponse<BackendProperty>>('/properties', payload);
     return extractApiData(response);
@@ -210,6 +225,14 @@ export const propertyApi = {
     const response = await api.put<BackendApiResponse<BackendProperty>>(`/properties/${id}`, payload);
     return extractApiData(response);
   },
+  renewProperty: async (id: string, payload: RenewListingPayload): Promise<BackendProperty> => {
+    const response = await api.post<BackendApiResponse<BackendProperty>>(`/properties/${id}/renew`, payload);
+    return extractApiData(response);
+  },
+  createPaymentPreference: async (payload: CreatePaymentPreferencePayload): Promise<PaymentPreference> => {
+    const response = await api.post<BackendApiResponse<PaymentPreference>>('/payments/create-preference', payload);
+    return extractApiData(response);
+  },
   activate: async (id: string): Promise<void> => {
     await api.patch<BackendApiResponse<{ id: string }>>(`/properties/${id}/activate`);
   },
@@ -235,6 +258,19 @@ export const alertApi = {
   },
   deactivate: async (id: string): Promise<void> => {
     await api.patch<BackendApiResponse<{ id: string }>>(`/alerts/${id}/deactivate`);
+  },
+};
+
+export const locationApi = {
+  getProvinces: async (): Promise<Province[]> => {
+    const response = await api.get<BackendApiResponse<Province[]>>('/locations/provinces');
+    return extractApiData(response);
+  },
+  getCitiesByProvinceSlug: async (slug: string): Promise<City[]> => {
+    const response = await api.get<BackendApiResponse<City[]>>('/locations/cities', {
+      params: { province: slug },
+    });
+    return extractApiData(response);
   },
 };
 

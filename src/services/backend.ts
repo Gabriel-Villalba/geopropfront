@@ -1,6 +1,6 @@
 import axios from 'axios';
 import type { AxiosResponse } from 'axios';
-import type { Property } from '../types';
+import type { ListingDuration, ListingStatus, ListingType, Property } from '../types';
 
 export interface BackendApiResponse<T> {
   success: boolean;
@@ -49,6 +49,15 @@ export interface BackendProperty {
   deactivatedAt: string | null;
   city?: BackendCity | null;
   images?: BackendPropertyImage[];
+  listing?: {
+    listingType: ListingType;
+    listingDuration: ListingDuration;
+    listingExpiresAt: string;
+    isFeatured: boolean;
+    featuredUntil: string | null;
+    status: ListingStatus;
+    isActive: boolean;
+  };
 }
 
 export interface BackendAlert {
@@ -176,5 +185,16 @@ export function mapBackendPropertyToUi(property: BackendProperty): Property {
       name: property.contactName ?? 'GeoProp',
       phone: property.contactPhone ?? null,
     },
+    listing: property.listing
+      ? {
+          listingType: property.listing.listingType,
+          listingDuration: property.listing.listingDuration,
+          listingExpiresAt: property.listing.listingExpiresAt,
+          isFeatured: property.listing.isFeatured,
+          featuredUntil: property.listing.featuredUntil,
+          status: property.listing.status,
+          isActive: property.listing.isActive,
+        }
+      : undefined,
   };
 }

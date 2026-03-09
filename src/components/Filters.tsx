@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { MapPin } from 'lucide-react';
 import type { FiltersFormState } from '../hooks/useFilters';
+import { useSantaFeCities } from '../hooks/useSantaFeCities';
 
 interface FiltersProps {
   filters: FiltersFormState;
@@ -32,6 +33,14 @@ const typeLabel: Record<ValidPropertyType, string> = {
 export function Filters({ filters, onChange, onSubmit, onReset, isLoading }: FiltersProps) {
   const [openDropdown, setOpenDropdown] = useState<DropdownType>(null);
   const wrapperRef = useRef<HTMLFormElement>(null);
+  const { cities, isLoadingCities, citiesError, reloadCities } = useSantaFeCities();
+
+  useEffect(() => {
+    if (!filters.city || cities.length === 0) return;
+    const hasCurrentCity = cities.some((city) => city.name === filters.city);
+    if (hasCurrentCity) return;
+    onChange('city', '');
+  }, [cities, filters.city, onChange]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -62,7 +71,7 @@ export function Filters({ filters, onChange, onSubmit, onReset, isLoading }: Fil
               openDropdown === 'operation' ? 'bg-orange-500 text-white rounded-none' : 'bg-white text-gray-700 hover:bg-orange-50 rounded-none'
             }`}
           >
-            {filters.operation === 'venta' ? 'Comprar' : 'Alquilar'}
+            {filters.operation === 'venta' ? 'Comprar' : filters.operation === 'alquiler' ? 'Alquilar' : 'Operacion'}
           </button>
 
           <AnimatePresence>
@@ -76,6 +85,7 @@ export function Filters({ filters, onChange, onSubmit, onReset, isLoading }: Fil
                 className="absolute left-0 z-50 mt-2 w-48 bg-orange-500 p-2 shadow-lg rounded-none"
               >
                 {[
+                  { value: '', label: 'Todas' },
                   { value: 'venta', label: 'Comprar' },
                   { value: 'alquiler', label: 'Alquilar' },
                 ].map((operation) => (
@@ -143,13 +153,36 @@ export function Filters({ filters, onChange, onSubmit, onReset, isLoading }: Fil
 
         <div className="relative">
           <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-          <input
-            type="text"
+          <select
             value={filters.city}
-            disabled
-            className="w-full cursor-not-allowed  border border-orange-500 bg-gray-100 px-4 py-3 text-center text-sm text-gray-600 rounded-none"
-          />
+            onChange={(event) => onChange('city', event.target.value)}
+            disabled={isLoadingCities || Boolean(citiesError)}
+            className="w-full border border-orange-500 bg-white px-4 py-3 pl-9 text-sm text-gray-700 rounded-none disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
+          >
+            <option value="">
+              {isLoadingCities ? 'Cargando ciudades...' : 'Ciudad o localidad (Santa Fe)'}
+            </option>
+            {cities.map((city) => (
+              <option key={city.id} value={city.name}>
+                {city.name}
+              </option>
+            ))}
+          </select>
         </div>
+
+        {citiesError && (
+          <div className="w-full border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 md:w-auto">
+            <p>No se pudieron cargar ciudades/localidades de Santa Fe.</p>
+            <p className="mt-1">{citiesError}</p>
+            <button
+              type="button"
+              onClick={() => void reloadCities()}
+              className="mt-2 border border-rose-300 px-2 py-1 font-semibold transition hover:bg-rose-100"
+            >
+              Reintentar
+            </button>
+          </div>
+        )}
 
         <div className="relative">
           <button

@@ -4,7 +4,6 @@ import { useOwnerPanel } from './useOwnerPanel';
 const mockedApi = vi.hoisted(() => ({
   meApi: {
     getMe: vi.fn(),
-    getMyProperties: vi.fn(),
   },
   alertApi: {
     list: vi.fn(),
@@ -12,6 +11,7 @@ const mockedApi = vi.hoisted(() => ({
     deactivate: vi.fn(),
   },
   propertyApi: {
+    getMyPropertiesExtended: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
     activate: vi.fn(),
@@ -19,6 +19,8 @@ const mockedApi = vi.hoisted(() => ({
     approve: vi.fn(),
     remove: vi.fn(),
     deleteImage: vi.fn(),
+    renewProperty: vi.fn(),
+    createPaymentPreference: vi.fn(),
   },
 }));
 
@@ -43,43 +45,46 @@ describe('useOwnerPanel', () => {
       planExpiresAt: null,
       subscriptionStatus: null,
     });
-    mockedApi.meApi.getMyProperties.mockResolvedValue([
-      {
-        id: 'prop-1',
-        clientId: 'c1',
-        cityId: 'city-1',
-        title: 'Casa Centro',
-        description: null,
-        operation: 'sale',
-        propertyType: 'house',
-        price: 100000,
-        currency: 'USD',
-        bedrooms: 2,
-        bathrooms: 1,
-        area: 80,
-        parking: 1,
-        address: 'Calle 123',
-        ownerType: 'particular',
-        contactName: 'Owner',
-        contactPhone: null,
-        isActive: true,
-        isFeatured: false,
-        source: 'internal',
-        status: 'approved',
-        createdBy: 'u1',
-        publishedAt: null,
-        deactivatedAt: null,
-        city: { id: 'city-1', name: 'Cordoba' },
-        images: [
-          {
-            id: 'img-1',
-            imageUrl: 'https://cdn.test/image-1.jpg',
-            order: 1,
-            isPrimary: true,
-          },
-        ],
-      },
-    ]);
+    mockedApi.propertyApi.getMyPropertiesExtended.mockResolvedValue({
+      properties: [
+        {
+          id: 'prop-1',
+          clientId: 'c1',
+          cityId: 'city-1',
+          title: 'Casa Centro',
+          description: null,
+          operation: 'sale',
+          propertyType: 'house',
+          price: 100000,
+          currency: 'USD',
+          bedrooms: 2,
+          bathrooms: 1,
+          area: 80,
+          parking: 1,
+          address: 'Calle 123',
+          ownerType: 'particular',
+          contactName: 'Owner',
+          contactPhone: null,
+          isActive: true,
+          isFeatured: false,
+          source: 'internal',
+          status: 'approved',
+          createdBy: 'u1',
+          publishedAt: null,
+          deactivatedAt: null,
+          city: { id: 'city-1', name: 'Cordoba' },
+          images: [
+            {
+              id: 'img-1',
+              imageUrl: 'https://cdn.test/image-1.jpg',
+              order: 1,
+              isPrimary: true,
+            },
+          ],
+        },
+      ],
+      expiringSoon: [],
+    });
     mockedApi.alertApi.list.mockResolvedValue([]);
   });
 
@@ -97,7 +102,7 @@ describe('useOwnerPanel', () => {
     });
 
     expect(mockedApi.propertyApi.deleteImage).toHaveBeenCalledWith('prop-1', 'img-1');
-    expect(mockedApi.meApi.getMyProperties).toHaveBeenCalledTimes(2);
+    expect(mockedApi.propertyApi.getMyPropertiesExtended).toHaveBeenCalledTimes(2);
 
     await waitFor(() => {
       expect(result.current.message).toEqual({

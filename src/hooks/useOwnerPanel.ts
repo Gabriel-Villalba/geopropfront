@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { alertApi, meApi, propertyApi } from '../services/api';
 import type { BackendAlert, BackendMe, BackendProperty } from '../services/backend';
 import { getApiErrorMessage } from '../services/backend';
+import type { CreatePaymentPreferencePayload, ExpiringProperty, RenewListingPayload } from '../types';
 
 interface PanelMessage {
   type: 'success' | 'error';
@@ -11,10 +12,12 @@ interface PanelMessage {
 export function useOwnerPanel() {
   const [profile, setProfile] = useState<BackendMe | null>(null);
   const [myProperties, setMyProperties] = useState<BackendProperty[]>([]);
+  const [expiringSoon, setExpiringSoon] = useState<ExpiringProperty[]>([]);
   const [alerts, setAlerts] = useState<BackendAlert[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSavingProperty, setIsSavingProperty] = useState(false);
   const [isSavingAlert, setIsSavingAlert] = useState(false);
+  const [listingActionPropertyId, setListingActionPropertyId] = useState<string | null>(null);
   const [message, setMessage] = useState<PanelMessage | null>(null);
 
   const loadPanel = useCallback(async () => {
@@ -22,9 +25,9 @@ export function useOwnerPanel() {
     setMessage(null);
 
     try {
-      const [me, properties, userAlerts] = await Promise.all([
+      const [me, propertiesData, userAlerts] = await Promise.all([
         meApi.getMe(),
-        meApi.getMyProperties(),
+        propertyApi.getMyPropertiesExtended(),
         alertApi.list(),
       ]);
 
@@ -40,12 +43,14 @@ export function useOwnerPanel() {
         planExpiresAt: me.planExpiresAt,
         subscriptionStatus: me.subscriptionStatus,
       });
-      setMyProperties(properties);
+      setMyProperties(propertiesData.properties);
+      setExpiringSoon(propertiesData.expiringSoon.filter((item) => item.daysLeft <= 3));
       setAlerts(userAlerts);
     } catch (error) {
       setMessage({ type: 'error', text: getApiErrorMessage(error) });
       setProfile(null);
       setMyProperties([]);
+      setExpiringSoon([]);
       setAlerts([]);
     } finally {
       setIsLoading(false);
@@ -160,6 +165,44 @@ export function useOwnerPanel() {
     [loadPanel],
   );
 
+  const renewPropertyListing = useCallback(
+    async (propertyId: string, payload: RenewListingPayload) => {
+      setMessage(null);
+      setListingActionPropertyId(propertyId);
+      try {
+        await propertyApi.renewProperty(propertyId, payload);
+        await loadPanel();
+        setMessage({ type: 'success', text: 'Publicacion renovada correctamente.' });
+      } catch (error) {
+        setMessage({ type: 'error', text: getApiErrorMessage(error) });
+        throw error;
+      } finally {
+        setListingActionPropertyId(null);
+      }
+    },
+    [loadPanel],
+  );
+
+  const createPreferenceAndRedirect = useCallback(async (payload: CreatePaymentPreferencePayload) => {
+    setMessage(null);
+    setListingActionPropertyId(payload.propertyId);
+    try {
+      const payment = await propertyApi.createPaymentPreference(payload);
+      const checkoutUrl = payment.initPoint || payment.sandboxInitPoint;
+
+      if (!checkoutUrl) {
+        throw new Error('No se recibio una URL valida de Mercado Pago.');
+      }
+
+      window.location.href = checkoutUrl;
+    } catch (error) {
+      setMessage({ type: 'error', text: getApiErrorMessage(error) });
+      throw error;
+    } finally {
+      setListingActionPropertyId(null);
+    }
+  }, []);
+
   const createAlert = useCallback(
     async (payload: Record<string, unknown>) => {
       setIsSavingAlert(true);
@@ -196,10 +239,12 @@ export function useOwnerPanel() {
   return {
     profile,
     myProperties,
+    expiringSoon,
     alerts,
     isLoading,
     isSavingProperty,
     isSavingAlert,
+    listingActionPropertyId,
     message,
     loadPanel,
     createProperty,
@@ -209,6 +254,8 @@ export function useOwnerPanel() {
     approveProperty,
     deleteProperty,
     deletePropertyImage,
+    renewPropertyListing,
+    createPreferenceAndRedirect,
     createAlert,
     deactivateAlert,
   };

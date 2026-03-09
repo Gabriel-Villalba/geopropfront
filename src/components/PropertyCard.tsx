@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Bath, BedDouble, CarFront, MapPin, Maximize2 } from 'lucide-react';
+import { FeaturedBadge } from '../features/listings';
 import type { Property } from '../types';
 
 interface PropertyCardProps {
@@ -19,9 +20,9 @@ const getImageUrl = (property: Property) =>
   'https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=900&q=80';
 
 export function PropertyCard({ property, onClick, index }: PropertyCardProps) {
-   console.log("PROPERTY QUE LLEGA:", property);
   const imageUrl = getImageUrl(property);
   const publisherName = property.publisher?.name ?? 'GeoProp';
+  const isFeatured = property.listing?.isFeatured ?? false;
 
   return (
     <motion.article
@@ -53,6 +54,7 @@ export function PropertyCard({ property, onClick, index }: PropertyCardProps) {
             {property.type}
           </span>
         )}
+        <FeaturedBadge isFeatured={isFeatured} className="absolute right-4 top-4" />
 
         <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition group-hover:opacity-100">
           <span className="rounded-xl border border-orange-500 bg-white px-4 py-2 text-sm font-semibold">Ver mas</span>

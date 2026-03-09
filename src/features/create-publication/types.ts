@@ -12,6 +12,8 @@ export interface CreatePublicationState {
   metrosCuadrados?: number;
   precio: number | null;
   descripcion: string;
+  provinciaSlug: string;
+  cityId: string;
   ciudad: string;
   direccion: string;
   telefonoContacto: string;

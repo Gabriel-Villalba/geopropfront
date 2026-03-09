@@ -19,8 +19,8 @@ export interface FiltersFormState {
 }
 
 const DEFAULT_FILTERS: FiltersFormState = {
-  city: 'Rafaela',
-  operation: 'venta',
+  city: '',
+  operation: null,
   type: '',
   sizeCategory: '',
   minBedrooms: '',

@@ -4,6 +4,34 @@ export interface Publisher {
   phone: string | null;
 }
 
+export interface Province {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+export interface City {
+  id: string;
+  name: string;
+  slug: string;
+  latitude: string | number | null;
+  longitude: string | number | null;
+}
+
+export type ListingType = 'normal' | 'featured';
+export type ListingDuration = 15 | 30 | 60;
+export type ListingStatus = 'draft' | 'active' | 'expired';
+
+export interface PropertyListing {
+  listingType: ListingType;
+  listingDuration: ListingDuration;
+  listingExpiresAt: string;
+  isFeatured: boolean;
+  featuredUntil: string | null;
+  status: ListingStatus;
+  isActive: boolean;
+}
+
 export interface Property {
   id: string | number;
   title: string;
@@ -30,6 +58,7 @@ export interface Property {
   image?: string | null;
   images?: string[];
   publisher?: Publisher;
+  listing?: PropertyListing;
 }
 
 export interface PropertyFilters {
@@ -137,4 +166,41 @@ export interface ApiResponse<T> {
   success: boolean;
   data: T;
   error: string | null;
+}
+
+export interface ExpiringProperty {
+  propertyId: string;
+  title: string;
+  listingType: ListingType;
+  expiresAt: string;
+  daysLeft: number;
+  canRenew: boolean;
+}
+
+export interface MyPropertiesExtendedData {
+  properties: unknown[];
+  expiringSoon: ExpiringProperty[];
+}
+
+export interface RenewListingPayload {
+  listingType: ListingType;
+  listingDuration: ListingDuration;
+}
+
+export interface CreatePaymentPreferencePayload {
+  propertyId: string;
+  type: ListingType;
+  duration: ListingDuration;
+}
+
+export interface PaymentPreference {
+  paymentId: string;
+  propertyId: string;
+  preferenceId: string;
+  initPoint: string;
+  sandboxInitPoint: string;
+  type: ListingType;
+  duration: ListingDuration;
+  amount: number;
+  status: string;
 }

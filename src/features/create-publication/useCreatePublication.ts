@@ -14,6 +14,8 @@ const initialState: CreatePublicationState = {
   metrosCuadrados: undefined,
   precio: null,
   descripcion: '',
+  provinciaSlug: 'santa-fe',
+  cityId: '',
   ciudad: '',
   direccion: '',
   telefonoContacto: '',
@@ -72,6 +74,8 @@ function hasStepThreeRequiredFields(state: CreatePublicationState): boolean {
     typeof state.precio === 'number' &&
     state.precio > 0 &&
     state.descripcion.trim().length > 0 &&
+    state.provinciaSlug.trim().length > 0 &&
+    state.cityId.trim().length > 0 &&
     state.ciudad.trim().length > 0;
 
   if (!commonOk || !state.propertyType) {
@@ -157,6 +161,8 @@ export function useCreatePublication() {
     setSubmitWarning(null);
 
     const normalizedOwner = ownerName?.trim() || 'Propietario';
+    const normalizedProvinceSlug = state.provinciaSlug.trim();
+    const normalizedCityId = state.cityId.trim();
     const normalizedCity = state.ciudad.trim();
     const normalizedAddress = state.direccion.trim();
     const normalizedPhone = state.telefonoContacto.trim();
@@ -166,6 +172,12 @@ export function useCreatePublication() {
 
     if (!mappedOperation || !mappedPropertyType) {
       setSubmitError('No se pudo mapear operacion o tipo de propiedad para backend.');
+      setIsSubmitting(false);
+      return false;
+    }
+
+    if (!normalizedProvinceSlug || !normalizedCityId) {
+      setSubmitError('Debes seleccionar provincia y ciudad.');
       setIsSubmitting(false);
       return false;
     }
@@ -184,7 +196,7 @@ export function useCreatePublication() {
       contactName: normalizedOwner,
       contactPhone: normalizedPhone || undefined,
       currency: 'USD',
-      city: normalizedCity,
+      cityId: normalizedCityId,
       address: normalizedAddress || undefined,
       source: 'internal',
     };

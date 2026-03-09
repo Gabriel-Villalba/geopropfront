@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Filters, Navbar, Pagination, PropertyCard, PropertyModal } from '../components';
 import { useFilters } from '../hooks/useFilters';
 import { usePagination } from '../hooks/usePagination';
@@ -9,20 +9,25 @@ import { PublishPropertyCTA } from '../components/PublishPropertyCTA';
 
 export function Dashboard() {
   const { filters, params, updateFilter, resetFilters } = useFilters();
-  const { properties, isLoading, error, hasFetched, fetchProperties, resetProperties } = useProperties();
+  const { properties, isLoading, error, hasFetched, fetchProperties } = useProperties();
 
   const { visibleItems, currentPage, totalPages, totalCount, goToPage } = usePagination(properties, 6);
 
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const initialParamsRef = useRef(params);
+
+  useEffect(() => {
+    void fetchProperties(initialParamsRef.current);
+  }, [fetchProperties]);
 
   const handleSubmit = useCallback(async () => {
     await fetchProperties(params);
   }, [fetchProperties, params]);
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     resetFilters();
-    resetProperties();
-  };
+    void fetchProperties(initialParamsRef.current);
+  }, [fetchProperties, resetFilters]);
 
   return (
     <div className="bg-gray-50 pt-20 sm:pt-24">

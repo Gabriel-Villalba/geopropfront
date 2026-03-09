@@ -32,6 +32,7 @@ describe('MyPropertiesPage', () => {
 
     mockUseOwnerPanel.mockReturnValue({
       profile: { role: 'owner' },
+      expiringSoon: [],
       myProperties: [
         {
           id: 'prop-1',
@@ -51,6 +52,7 @@ describe('MyPropertiesPage', () => {
         },
       ],
       isLoading: false,
+      listingActionPropertyId: null,
       message: null,
       loadPanel: vi.fn().mockResolvedValue(undefined),
       activateProperty: vi.fn().mockResolvedValue(undefined),
@@ -58,6 +60,8 @@ describe('MyPropertiesPage', () => {
       approveProperty: vi.fn().mockResolvedValue(undefined),
       deleteProperty: vi.fn().mockResolvedValue(undefined),
       deletePropertyImage,
+      renewPropertyListing: vi.fn().mockResolvedValue(undefined),
+      createPreferenceAndRedirect: vi.fn().mockResolvedValue(undefined),
     });
 
     render(

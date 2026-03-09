@@ -36,6 +36,9 @@ export function SummaryStep({ state }: StepProps) {
           <span className="font-semibold text-slate-900">Tipo:</span> {displayPropertyType(state.propertyType)}
         </p>
         <p>
+          <span className="font-semibold text-slate-900">Provincia:</span> {state.provinciaSlug ? 'Santa Fe' : '-'}
+        </p>
+        <p>
           <span className="font-semibold text-slate-900">Ciudad:</span> {state.ciudad || '-'}
         </p>
         <p>

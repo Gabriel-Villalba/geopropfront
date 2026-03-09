@@ -69,6 +69,10 @@ src/
 - Configura `baseURL`, timeout e interceptor JWT.
 - Expone servicios por dominio (`authApi`, `meApi`, `propertyApi`, `alertApi`) y la instancia `api`.
 - Normaliza errores de negocio y mapeos backend->UI en `src/services/backend.ts`.
+- Incluye integracion de listings pagos:
+  - `propertyApi.getMyPropertiesExtended()` -> `GET /properties/my`
+  - `propertyApi.renewProperty()` -> `POST /properties/:id/renew`
+  - `propertyApi.createPaymentPreference()` -> `POST /payments/create-preference`
 
 ### Panel propietario (integrado en dashboard)
 
@@ -77,12 +81,26 @@ src/
 - Visible para usuarios autenticados dentro de `/dashboard`.
 - Incluye:
   - Datos de plan y perfil (`/me`)
-  - Mis propiedades (`/me/properties`)
+  - Mis propiedades y vencimientos (`/properties/my`)
   - Crear/editar propiedad
   - Activar/desactivar propiedad
   - Aprobar propiedad (si rol admin)
   - Soft delete de propiedad
   - Crear/listar/desactivar alertas
+  - Renovacion de publicaciones (normal/featured + 15/30/60 dias)
+  - Redireccion a checkout de Mercado Pago para destacados
+
+### Listings pagos (nuevo)
+
+- Carpeta: `src/features/listings`
+- Componentes:
+  - `ListingPlanSelector.tsx`: selector reutilizable de tipo/duracion.
+  - `RenewListingModal.tsx`: modal de renovacion con CTA de pago para featured.
+  - `ExpiringPropertiesAlert.tsx`: alerta de publicaciones por vencer (`daysLeft <= 3`).
+  - `FeaturedBadge.tsx`: badge visual para publicaciones destacadas.
+- Integraciones:
+  - `src/pages/panel/properties/MyPropertiesPage.tsx` usa alerta de vencimientos + modal de renovacion.
+  - `src/components/PropertyCard.tsx` muestra badge destacado cuando `property.listing.isFeatured === true`.
 
 ### Panel de usuarios (admin)
 
@@ -120,12 +138,15 @@ Propietario:
 
 - `GET /me/properties`
 - `GET /properties`
+- `GET /properties/my`
 - `POST /properties`
 - `PUT /properties/:id`
+- `POST /properties/:id/renew`
 - `PATCH /properties/:id/activate`
 - `PATCH /properties/:id/deactivate`
 - `PATCH /properties/:id/approve` (admin)
 - `DELETE /properties/:id`
+- `POST /payments/create-preference`
 - `GET /alerts`
 - `POST /alerts`
 - `PATCH /alerts/:id/deactivate`
@@ -163,3 +184,4 @@ npm test
 - El frontend espera backend con JWT en `Authorization: Bearer <token>`.
 - Actualmente el formulario de propietario solicita `cityId` (UUID) manual.
 - Proximo paso recomendado: integrar endpoint de catalogo de ciudades y reemplazar `cityId` manual por selector.
+- El orden de listados publicos no se altera en frontend; se respeta el orden entregado por backend (`isFeatured DESC`, `createdAt DESC`).

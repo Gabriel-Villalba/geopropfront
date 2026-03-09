@@ -1,4 +1,4 @@
-import api, { authApi, propertyApi } from './api';
+import api, { authApi, locationApi, propertyApi } from './api';
 import type { RegisterCredentials, LoginCredentials } from '../types';
 
 vi.mock('./backend', () => ({
@@ -91,5 +91,110 @@ describe('propertyApi', () => {
     await propertyApi.deleteImage('prop-1', 'img-1');
 
     expect(api.delete).toHaveBeenCalledWith('/properties/prop-1/images/img-1');
+  });
+
+  it('llama GET /properties/my para obtener propiedades extendidas', async () => {
+    vi.spyOn(api, 'get').mockResolvedValue({
+      data: {
+        success: true,
+        data: {
+          properties: [],
+          expiringSoon: [],
+        },
+        error: null,
+      },
+    } as unknown);
+
+    await propertyApi.getMyPropertiesExtended();
+
+    expect(api.get).toHaveBeenCalledWith('/properties/my');
+  });
+
+  it('llama POST /properties/:id/renew para renovar publicacion', async () => {
+    vi.spyOn(api, 'post').mockResolvedValue({
+      data: {
+        success: true,
+        data: { id: 'prop-1' },
+        error: null,
+      },
+    } as unknown);
+
+    await propertyApi.renewProperty('prop-1', {
+      listingType: 'normal',
+      listingDuration: 30,
+    });
+
+    expect(api.post).toHaveBeenCalledWith('/properties/prop-1/renew', {
+      listingType: 'normal',
+      listingDuration: 30,
+    });
+  });
+
+  it('llama POST /payments/create-preference para iniciar checkout', async () => {
+    vi.spyOn(api, 'post').mockResolvedValue({
+      data: {
+        success: true,
+        data: {
+          paymentId: 'pay-1',
+          propertyId: 'prop-1',
+          preferenceId: 'pref-1',
+          initPoint: 'https://www.mercadopago.com/checkout/test',
+          sandboxInitPoint: 'https://sandbox.mercadopago.com/checkout/test',
+          type: 'featured',
+          duration: 30,
+          amount: 6000,
+          status: 'pending',
+        },
+        error: null,
+      },
+    } as unknown);
+
+    await propertyApi.createPaymentPreference({
+      propertyId: 'prop-1',
+      type: 'featured',
+      duration: 30,
+    });
+
+    expect(api.post).toHaveBeenCalledWith('/payments/create-preference', {
+      propertyId: 'prop-1',
+      type: 'featured',
+      duration: 30,
+    });
+  });
+});
+
+describe('locationApi', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('llama GET /locations/provinces para provincias oficiales', async () => {
+    vi.spyOn(api, 'get').mockResolvedValue({
+      data: {
+        success: true,
+        data: [{ id: 'p1', name: 'Santa Fe', slug: 'santa-fe' }],
+        error: null,
+      },
+    } as unknown);
+
+    await locationApi.getProvinces();
+
+    expect(api.get).toHaveBeenCalledWith('/locations/provinces');
+  });
+
+  it('llama GET /locations/cities con query province', async () => {
+    vi.spyOn(api, 'get').mockResolvedValue({
+      data: {
+        success: true,
+        data: [{ id: 'c1', name: 'Rafaela', slug: 'rafaela', latitude: null, longitude: null }],
+        error: null,
+      },
+    } as unknown);
+
+    await locationApi.getCitiesByProvinceSlug('santa-fe');
+
+    expect(api.get).toHaveBeenCalledWith('/locations/cities', {
+      params: { province: 'santa-fe' },
+    });
   });
 });
