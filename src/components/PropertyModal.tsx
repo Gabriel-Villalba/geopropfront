@@ -13,9 +13,10 @@ const formatPrice = (amount?: number | null, currency?: string | null) => {
 };
 
 export function PropertyModal({ property, onClose }: PropertyModalProps) {
-  const publisherName = property.publisher?.name ?? 'GeoProp';
+  const publisherName = property.publisher?.name ?? 'Sin especificar';
   const phoneRaw = property.publisher?.phone ?? '';
   const phoneDigits = phoneRaw.replace(/\D/g, '');
+  const phoneLabel = phoneRaw || 'Sin telefono disponible';
   const whatsappLink = phoneDigits
     ? `https://wa.me/${phoneDigits}?text=Hola, quiero consultar por la propiedad ${property.id}`
     : null;
@@ -129,18 +130,21 @@ export function PropertyModal({ property, onClose }: PropertyModalProps) {
               <div className="flex flex-col">
                 <p className="mb-2 text-sm text-gray-600">Contactar anunciante:</p>
                 {whatsappLink ? (
-                  <a
-                    href={whatsappLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-green-600 text-sm font-semibold text-white transition-all duration-200 hover:bg-green-700"
-                  >
-                    <MessageCircle className="h-5 w-5" />
-                    <span>Contactar por WhatsApp</span>
-                  </a>
+                  <div className="space-y-2">
+                    <a
+                      href={whatsappLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-green-600 text-sm font-semibold text-white transition-all duration-200 hover:bg-green-700"
+                    >
+                      <MessageCircle className="h-5 w-5" />
+                      <span>Contactar por WhatsApp</span>
+                    </a>
+                    <div className="text-center text-xs text-gray-600">{phoneLabel}</div>
+                  </div>
                 ) : (
                   <div className="flex h-12 w-full items-center justify-center rounded-xl bg-gray-100 text-sm text-gray-500">
-                    Sin telefono disponible
+                    {phoneLabel}
                   </div>
                 )}
               </div>

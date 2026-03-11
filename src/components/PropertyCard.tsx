@@ -21,7 +21,7 @@ const getImageUrl = (property: Property) =>
 
 export function PropertyCard({ property, onClick, index }: PropertyCardProps) {
   const imageUrl = getImageUrl(property);
-  const publisherName = property.publisher?.name ?? 'GeoProp';
+  const publisherName = property.publisher?.name ?? 'Sin especificar';
   const isFeatured = property.listing?.isFeatured ?? false;
 
   return (
@@ -39,7 +39,7 @@ export function PropertyCard({ property, onClick, index }: PropertyCardProps) {
         damping: 18,
         delay: Math.floor(index / 3) * 0.25,
       }}
-      className="group cursor-pointer overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+      className="group cursor-pointer overflow-hidden border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
     >
       <div className="relative h-52 w-full overflow-hidden">
         <img
