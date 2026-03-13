@@ -61,7 +61,7 @@ export function Dashboard() {
             properties.length > 0 ? (
               <div>
                 <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <h2 className="text-xl font-semibold text-gray-900">{totalCount} propiedades encontradas</h2>
+                  <h2 className="text-xl font-semibold text-gray-900">{totalCount} Resultados</h2>
                   <p className="text-sm text-gray-500">Mostrando {visibleItems.length} resultados</p>
                 </div>
 

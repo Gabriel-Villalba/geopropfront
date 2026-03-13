@@ -176,7 +176,7 @@ export function mapBackendPropertyToUi(property: BackendProperty): Property {
       totalArea: property.area ? Number(property.area) : null,
       bedrooms: property.bedrooms,
       bathrooms: property.bathrooms,
-      parking: null,
+      parking: property.parking ?? null,
     },
     image: primaryImage,
     images: imageUrls,

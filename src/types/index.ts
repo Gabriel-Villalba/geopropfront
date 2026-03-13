@@ -51,9 +51,13 @@ export interface Property {
   };
   specs?: {
     totalArea?: number | null;
+    coveredArea?: number | null;
+    landArea?: number | null;
+    rooms?: number | null;
     bedrooms?: number | null;
     bathrooms?: number | null;
     parking?: number | null;
+    ageYears?: number | null;
   };
   image?: string | null;
   images?: string[];

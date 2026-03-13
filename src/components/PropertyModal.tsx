@@ -1,5 +1,21 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, MapPin, MessageCircle, X } from 'lucide-react';
+import {
+  Bath,
+  BedDouble,
+  CalendarClock,
+  CarFront,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  Home,
+  LandPlot,
+  LayoutGrid,
+  MapPin,
+  Maximize2,
+  MessageCircle,
+  X,
+} from 'lucide-react';
 import type { Property } from '../types';
 
 interface PropertyModalProps {
@@ -10,6 +26,16 @@ interface PropertyModalProps {
 const formatPrice = (amount?: number | null, currency?: string | null) => {
   if (!amount || !currency) return 'Consultar precio';
   return `${currency} ${amount.toLocaleString('es-AR')}`;
+};
+
+const formatArea = (value?: number | null) => {
+  if (value === null || value === undefined) return null;
+  return `${value.toLocaleString('es-AR', { maximumFractionDigits: 2 })} m2`;
+};
+
+const formatCount = (value: number | null | undefined, singular: string, plural: string) => {
+  if (value === null || value === undefined) return null;
+  return `${value} ${value === 1 ? singular : plural}`;
 };
 
 export function PropertyModal({ property, onClose }: PropertyModalProps) {
@@ -30,6 +56,49 @@ export function PropertyModal({ property, onClose }: PropertyModalProps) {
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showDescription, setShowDescription] = useState(false);
+
+  const stats = [
+    {
+      label: 'm2 totales',
+      value: formatArea(property.specs?.totalArea),
+      icon: Maximize2,
+    },
+    {
+      label: 'm2 cubiertos',
+      value: formatArea(property.specs?.coveredArea),
+      icon: Home,
+    },
+    {
+      label: 'm2 terreno',
+      value: formatArea(property.specs?.landArea),
+      icon: LandPlot,
+    },
+    {
+      label: 'ambientes',
+      value: formatCount(property.specs?.rooms, 'ambiente', 'ambientes'),
+      icon: LayoutGrid,
+    },
+    {
+      label: 'banos',
+      value: formatCount(property.specs?.bathrooms, 'bano', 'banos'),
+      icon: Bath,
+    },
+    {
+      label: 'cochera',
+      value: formatCount(property.specs?.parking, 'cochera', 'cocheras'),
+      icon: CarFront,
+    },
+    {
+      label: 'dormitorios',
+      value: formatCount(property.specs?.bedrooms, 'dormitorio', 'dormitorios'),
+      icon: BedDouble,
+    },
+    {
+      label: 'anos antiguedad',
+      value: formatCount(property.specs?.ageYears, 'ano', 'anos'),
+      icon: CalendarClock,
+    },
+  ].filter((stat) => Boolean(stat.value));
 
   const goPrev = () => setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
   const goNext = () => setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
@@ -68,13 +137,6 @@ export function PropertyModal({ property, onClose }: PropertyModalProps) {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 bg-gray-50 px-8 py-4 text-sm text-gray-700">
-          {property.type && <span className="font-medium capitalize">{property.type}</span>}
-          {property.specs?.bedrooms && <span>{property.specs.bedrooms} dormitorios</span>}
-          {property.specs?.bathrooms && <span>{property.specs.bathrooms} banos</span>}
-          {property.specs?.parking && <span>{property.specs.parking} cochera</span>}
-        </div>
-
         <div className="space-y-6 p-8">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">{property.title}</h2>
@@ -88,7 +150,41 @@ export function PropertyModal({ property, onClose }: PropertyModalProps) {
             </div>
 
             <div className="mt-4 text-xl font-semibold text-gray-900">{formatPrice(property.price?.amount, property.price?.currency)}</div>
+
+            {(property.operation || property.type) && (
+              <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-wide">
+                {property.operation && (
+                  <span className="rounded-full bg-orange-100 px-3 py-1 text-orange-700">{property.operation}</span>
+                )}
+                {property.type && <span className="rounded-full bg-gray-100 px-3 py-1 text-gray-700">{property.type}</span>}
+              </div>
+            )}
           </div>
+
+          {stats.length > 0 && (
+            <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="text-sm font-semibold uppercase tracking-widest text-gray-500">CARACTERISTICAS</h3>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                {stats.map((stat) => {
+                  const Icon = stat.icon;
+                  return (
+                    <div key={stat.label} className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50/80 p-3">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-orange-500 shadow-sm">
+                        <Icon className="h-5 w-5" />
+                      </span>
+                      <div>
+                        <p className="text-base font-semibold text-gray-900">{stat.value}</p>
+                        <p className="text-xs font-medium uppercase tracking-wide text-gray-500">{stat.label}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {property.descriptionShort && (
             <div>
