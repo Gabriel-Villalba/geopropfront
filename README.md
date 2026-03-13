@@ -41,6 +41,17 @@ VITE_API_URL="https://backproperties.onrender.com/api"
 - `npm test`: ejecuta tests una vez
 - `npm run test:watch`: tests en modo watch
 
+## Despliegue en Vercel
+
+Configuracion recomendada:
+
+- Framework preset: Vite
+- Build command: `npm run build`
+- Output directory: `dist`
+- Variable de entorno: `VITE_API_URL` (ejemplo: `https://backproperties.onrender.com/api`)
+
+Si usas rutas de `react-router-dom`, el repo incluye `vercel.json` con rewrite para servir `index.html` en rutas profundas.
+
 ## Estructura principal
 
 ```text
