@@ -187,6 +187,22 @@ export const propertyApi = {
     const response = await api.post<BackendApiResponse<BackendProperty>>('/properties', payload);
     return extractApiData(response);
   },
+  createWithActivation: async (
+    payload: Record<string, unknown>,
+  ): Promise<{ property: BackendProperty; message?: string | null; activation?: { isActive: boolean; activeCountBeforeCreate?: number; plan?: string } | null }> => {
+    const response = await api.post<
+      BackendApiResponse<BackendProperty> & {
+        message?: string | null;
+        activation?: { isActive: boolean; activeCountBeforeCreate?: number; plan?: string } | null;
+      }
+    >('/properties', payload);
+
+    return {
+      property: extractApiData(response),
+      message: response.data.message ?? null,
+      activation: response.data.activation ?? null,
+    };
+  },
   uploadImage: async (
     propertyId: string,
     imageFile: File,

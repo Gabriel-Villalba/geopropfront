@@ -22,6 +22,7 @@ export default function MyPropertiesPage() {
   const [renewModalTitle, setRenewModalTitle] = useState('');
   const [renewModalType, setRenewModalType] = useState<'normal' | 'featured'>('normal');
   const [renewModalDuration, setRenewModalDuration] = useState<15 | 30 | 60>(30);
+  const [integrationMessage, setIntegrationMessage] = useState<string | null>(null);
   const {
     profile,
     myProperties,
@@ -47,6 +48,12 @@ export default function MyPropertiesPage() {
     const role = (profile?.role ?? user?.role ?? '').toLowerCase();
     return role === 'admin';
   }, [profile?.role, user?.role]);
+
+  const plan = useMemo(() => {
+    return (profile?.plan ?? user?.plan ?? 'FREE').toUpperCase();
+  }, [profile?.plan, user?.plan]);
+
+  const hasBulkIntegrations = plan === 'INMOBILIARIA' || plan === 'BROKER';
 
   const openRenewModal = (
     property: { id: string; title: string; listing?: { listingType?: 'normal' | 'featured'; listingDuration?: 15 | 30 | 60 } },
@@ -126,6 +133,32 @@ export default function MyPropertiesPage() {
           <h1 className="text-xl font-semibold text-slate-900">Mis propiedades</h1>
           <p className="mt-1 text-sm text-slate-600">Administra tus publicaciones activas y en revision.</p>
 
+          {hasBulkIntegrations && (
+            <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+              <p className="font-semibold">Integraciones para {plan}</p>
+              <p className="mt-1 text-xs text-blue-800">
+                Puedes conectar tu sistema o importar un CSV/Excel. Esta demo simula el flujo hasta que el backend lo habilite.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIntegrationMessage('Integracion solicitada. Te contactaremos para configurar la API.')}
+                  className="rounded-lg border border-blue-300 bg-white px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-100"
+                >
+                  Conectar sistema
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIntegrationMessage('Importacion CSV simulada. En breve podras subir archivos reales.')}
+                  className="rounded-lg border border-blue-300 bg-white px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-100"
+                >
+                  Importar CSV/Excel
+                </button>
+              </div>
+              {integrationMessage && <p className="mt-2 text-xs text-blue-800">{integrationMessage}</p>}
+            </div>
+          )}
+
           {message && (
             <div
               className={`mt-4 rounded-xl border px-4 py-3 text-sm ${
@@ -183,6 +216,13 @@ export default function MyPropertiesPage() {
                   )}
 
                   <div className="mt-4 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/panel/properties/${entry.id}/edit`)}
+                      className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                    >
+                      Editar
+                    </button>
                     <button
                       type="button"
                       onClick={() => void activateProperty(entry.id)}

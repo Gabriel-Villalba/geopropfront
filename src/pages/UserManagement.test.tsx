@@ -25,6 +25,11 @@ function baseUsersState(overrides?: Partial<ReturnType<typeof mockUseUsers>>) {
     active: true,
     role: 'admin',
     client: { id: 'c1', name: 'Client A' },
+    plan: 'FREE',
+    planSource: 'client',
+    planOverride: null,
+    planExpiresAt: null,
+    subscriptionStatus: null,
   };
 
   return {
@@ -94,7 +99,7 @@ describe('UserManagement', () => {
 
     await user.type(screen.getByLabelText(/nombre/i), 'New Agent');
     await user.type(screen.getByLabelText(/email/i), 'newagent@test.com');
-    await user.type(screen.getByLabelText(/password/i), 'password123');
+    await user.type(screen.getByLabelText(/contrasena/i), 'password123');
     await user.selectOptions(screen.getByLabelText(/^rol$/i), 'agent');
     await user.click(screen.getByRole('button', { name: /^Crear usuario$/ }));
 
@@ -105,11 +110,14 @@ describe('UserManagement', () => {
         password: 'password123',
         roleId: 'agent',
         active: true,
+        plan: null,
+        planExpiresAt: null,
+        subscriptionStatus: null,
       });
     });
   }, 15000);
 
-  it('edita usuario sin mostrar password', async () => {
+  it('edita usuario sin cambiar password', async () => {
     const usersState = baseUsersState();
     mockUseAuth.mockReturnValue({
       user: { id: '1', name: 'Admin', email: 'admin@test.com', role: 'admin' },
@@ -126,7 +134,7 @@ describe('UserManagement', () => {
     const user = userEvent.setup();
     await user.click(screen.getAllByRole('button', { name: /editar/i })[0]);
 
-    expect(screen.queryByLabelText(/password/i)).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/contrasena/i)).toBeInTheDocument();
 
     const nameInput = screen.getByLabelText(/nombre/i);
     await user.clear(nameInput);
@@ -140,9 +148,12 @@ describe('UserManagement', () => {
         email: 'admin1@test.com',
         roleId: 'agent',
         active: true,
+        plan: null,
+        planExpiresAt: null,
+        subscriptionStatus: null,
       });
     });
-  });
+  }, 15000);
 
   it('confirma antes de desactivar usuario', async () => {
     const usersState = baseUsersState();

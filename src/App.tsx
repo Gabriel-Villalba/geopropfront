@@ -24,6 +24,7 @@ const PanelDashboard = lazy(() => import('./pages/panel/PanelDashboard'));
 const EditProfilePage = lazy(() => import('./pages/panel/profile/EditProfilePage'));
 const MyPropertiesPage = lazy(() => import('./pages/panel/properties/MyPropertiesPage'));
 const CreatePropertyRoute = lazy(() => import('./pages/panel/properties/create'));
+const EditPropertyRoute = lazy(() => import('./pages/panel/properties/edit'));
 const CreateAlertPage = lazy(() => import('./pages/panel/alerts/CreateAlertPage'));
 
 const CustomCursor = lazy(() => import('./components/CustomCursor'));
@@ -94,6 +95,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <CreatePropertyRoute />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/panel/properties/:id/edit"
+                  element={
+                    <ProtectedRoute>
+                      <EditPropertyRoute />
                     </ProtectedRoute>
                   }
                 />

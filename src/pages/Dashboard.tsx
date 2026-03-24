@@ -30,16 +30,16 @@ export function Dashboard() {
   }, [fetchProperties, resetFilters]);
 
   return (
-    <div className="bg-gray-50 pt-20 sm:pt-24">
+    <div className="min-h-screen bg-white/30 pt-20 backdrop-blur-sm sm:pt-24">
       <Navbar />
 
       <main className="mx-auto max-w-7xl px-4 pb-8 sm:px-6 lg:px-8">
         <header className="mb-6 space-y-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Buscar propiedades - Rafaela</h1>
+              <h1 className="text-3xl font-bold text-gray-900">GeoProp: El mapa de tu futura propiedad.</h1>
               <p className="mt-2 text-gray-600">
-                Explora el mercado inmobiliario de Rafaela y filtra por operacion, tipo y caracteristicas clave.
+               Explorá, filtrá y compará cientos de inmuebles. Simple, rápido y sin vueltas.
               </p>
             </div>
 

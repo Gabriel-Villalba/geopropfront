@@ -5,6 +5,7 @@ const mockedApi = vi.hoisted(() => ({
   get: vi.fn(),
   post: vi.fn(),
   put: vi.fn(),
+  delete: vi.fn(),
 }));
 
 vi.mock('../services/api', () => ({
@@ -16,6 +17,7 @@ describe('useUsers', () => {
     mockedApi.get.mockReset();
     mockedApi.post.mockReset();
     mockedApi.put.mockReset();
+    mockedApi.delete.mockReset();
   });
 
   it('carga usuarios y cliente con getUsers', async () => {
@@ -153,6 +155,17 @@ describe('useUsers', () => {
         },
       });
 
+    mockedApi.delete.mockResolvedValueOnce({
+      data: {
+        success: true,
+        data: {
+          id: 'u1',
+          active: false,
+        },
+        error: null,
+      },
+    });
+
     const { result } = renderHook(() => useUsers());
 
     await act(async () => {
@@ -190,7 +203,7 @@ describe('useUsers', () => {
 
     const toggled = result.current.users.find((entry) => entry.id === 'u1');
     expect(toggled?.active).toBe(false);
-    expect(mockedApi.put).toHaveBeenCalledWith('/users/u1', { active: false });
+    expect(mockedApi.delete).toHaveBeenCalledWith('/users/u1');
   });
 
   it('setea error legible cuando la carga falla', async () => {
@@ -205,7 +218,7 @@ describe('useUsers', () => {
       await result.current.getUsers();
     });
 
-    expect(result.current.error).toBe('Invalid or expired token');
+    expect(result.current.error).toBe('Tu sesion expiro. Inicia sesion nuevamente.');
     expect(result.current.users).toEqual([]);
   });
 });

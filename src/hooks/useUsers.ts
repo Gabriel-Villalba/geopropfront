@@ -1,14 +1,38 @@
 import { useCallback, useState } from 'react';
-import axios from 'axios';
 import api from '../services/api';
+import { getApiErrorMessage } from '../services/backend';
 import type { ApiResponse, CreateUserPayload, UpdateUserPayload, UserClient, UserRecord, UserRole } from '../types';
 
-function getErrorMessage(error: unknown): string {
-  if (axios.isAxiosError<{ error?: string }>(error)) {
-    return error.response?.data?.error ?? 'No se pudo completar la operacion.';
+function normalizeUserPayload<T extends Partial<CreateUserPayload & UpdateUserPayload>>(payload: T): T {
+  const normalized: Record<string, unknown> = { ...payload };
+
+  if (typeof payload.email === 'string') {
+    normalized.email = payload.email.trim().toLowerCase();
   }
 
-  return 'No se pudo completar la operacion.';
+  if (typeof payload.name === 'string') {
+    normalized.name = payload.name.trim();
+  }
+
+  if (typeof payload.password === 'string') {
+    const trimmedPassword = payload.password.trim();
+    if (trimmedPassword) {
+      normalized.password = trimmedPassword;
+    } else {
+      delete normalized.password;
+    }
+  }
+
+  if (typeof payload.subscriptionStatus === 'string') {
+    const trimmedStatus = payload.subscriptionStatus.trim();
+    normalized.subscriptionStatus = trimmedStatus === '' ? null : trimmedStatus;
+  }
+
+  if (payload.planExpiresAt === '') {
+    normalized.planExpiresAt = null;
+  }
+
+  return normalized as T;
 }
 
 export function useUsers() {
@@ -37,7 +61,7 @@ export function useUsers() {
       setRoles(safeRoles);
       setClients(client ? [{ id: client.id, name: client.name }] : []);
     } catch (requestError) {
-      const message = getErrorMessage(requestError);
+      const message = getApiErrorMessage(requestError);
       setError(message);
       setUsers([]);
       setRoles([]);
@@ -51,12 +75,13 @@ export function useUsers() {
     setError(null);
 
     try {
-      const response = await api.post<ApiResponse<UserRecord>>('/users', payload);
+      const normalizedPayload = normalizeUserPayload(payload);
+      const response = await api.post<ApiResponse<UserRecord>>('/users', normalizedPayload);
       const created = response.data.data;
       setUsers((previous) => [created, ...previous]);
       return created;
     } catch (requestError) {
-      const message = getErrorMessage(requestError);
+      const message = getApiErrorMessage(requestError);
       setError(message);
       throw new Error(message);
     }
@@ -66,7 +91,8 @@ export function useUsers() {
     setError(null);
 
     try {
-      const response = await api.put<ApiResponse<UserRecord>>(`/users/${id}`, payload);
+      const normalizedPayload = normalizeUserPayload(payload);
+      const response = await api.put<ApiResponse<UserRecord>>(`/users/${id}`, normalizedPayload);
       const updated = response.data.data;
 
       setUsers((previous) =>
@@ -81,7 +107,7 @@ export function useUsers() {
 
       return updated;
     } catch (requestError) {
-      const message = getErrorMessage(requestError);
+      const message = getApiErrorMessage(requestError);
       setError(message);
       throw new Error(message);
     }
@@ -89,7 +115,32 @@ export function useUsers() {
 
   const toggleUserStatus = useCallback(
     async (user: UserRecord) => {
-      return updateUser(user.id, { active: !user.active });
+      if (!user.active) {
+        return updateUser(user.id, { active: true });
+      }
+
+      setError(null);
+
+      try {
+        const response = await api.delete<ApiResponse<UserRecord>>(`/users/${user.id}`);
+        const updated = response.data.data;
+
+        setUsers((previous) =>
+          previous.map((entry) => {
+            if (entry.id !== user.id) {
+              return entry;
+            }
+
+            return { ...entry, ...updated };
+          }),
+        );
+
+        return updated;
+      } catch (requestError) {
+        const message = getApiErrorMessage(requestError);
+        setError(message);
+        throw new Error(message);
+      }
     },
     [updateUser],
   );

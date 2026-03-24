@@ -29,7 +29,7 @@ export interface BackendProperty {
   title: string;
   description: string | null;
   operation: 'sale' | 'rent';
-  propertyType: 'house' | 'apartment' | 'land' | 'commercial';
+  propertyType: 'house' | 'apartment' | 'land' | 'commercial' | 'local_commercial' | 'galpon_deposito';
   price: number;
   currency: string;
   bedrooms: number | null;
@@ -147,6 +147,7 @@ function mapPropertyType(type: BackendProperty['propertyType']): Property['type'
   if (type === 'house') return 'casa';
   if (type === 'apartment') return 'departamento';
   if (type === 'land') return 'lote';
+  if (type === 'galpon_deposito') return 'galpon-deposito';
   return 'comercial';
 }
 

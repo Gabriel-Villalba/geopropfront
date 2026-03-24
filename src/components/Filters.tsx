@@ -60,7 +60,7 @@ export function Filters({ filters, onChange, onSubmit, onReset, isLoading }: Fil
         event.preventDefault();
         onSubmit();
       }}
-      className="relative bg-white p-4 shadow"
+      className="relative bg-white/30 p-4 shadow backdrop-blur"
     >
       <div className="flex flex-col gap-4 md:flex-row md:items-end">
         <div className="relative">

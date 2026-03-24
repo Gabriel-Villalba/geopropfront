@@ -109,6 +109,9 @@ export interface AuthResponse {
   user: User;
 }
 
+export type UserPlan = 'FREE' | 'INMOBILIARIA' | 'BROKER';
+export type UserPlanSource = 'user' | 'client' | 'default';
+
 export interface User {
   id: string;
   email: string;
@@ -117,7 +120,9 @@ export interface User {
   roleId?: string;
   role?: string;
   active?: boolean;
-  plan?: 'FREE' | 'INMOBILIARIA' | 'BROKER';
+  plan?: UserPlan;
+  planSource?: UserPlanSource | null;
+  planOverride?: UserPlan | null;
   planExpiresAt?: string | null;
   subscriptionStatus?: string | null;
   client?: {
@@ -146,6 +151,11 @@ export interface UserRecord {
   created_by?: string;
   role?: UserRole | string;
   client?: UserClient;
+  plan?: UserPlan;
+  planSource?: UserPlanSource | null;
+  planOverride?: UserPlan | null;
+  planExpiresAt?: string | null;
+  subscriptionStatus?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -156,6 +166,9 @@ export interface CreateUserPayload {
   password: string;
   roleId: string;
   active?: boolean;
+  plan?: UserPlan | null;
+  planExpiresAt?: string | null;
+  subscriptionStatus?: string | null;
 }
 
 export interface UpdateUserPayload {
@@ -164,6 +177,9 @@ export interface UpdateUserPayload {
   roleId?: string;
   active?: boolean;
   password?: string;
+  plan?: UserPlan | null;
+  planExpiresAt?: string | null;
+  subscriptionStatus?: string | null;
 }
 
 export interface ApiResponse<T> {

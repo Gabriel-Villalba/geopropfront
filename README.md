@@ -85,21 +85,14 @@ src/
   - `propertyApi.renewProperty()` -> `POST /properties/:id/renew`
   - `propertyApi.createPaymentPreference()` -> `POST /payments/create-preference`
 
-### Panel propietario (integrado en dashboard)
+### Panel propietario
 
-- `src/components/OwnerPanel.tsx`
+- `src/pages/panel/PanelDashboard.tsx`
+- `src/pages/panel/properties/MyPropertiesPage.tsx`
+- `src/pages/panel/properties/create`
+- `src/pages/panel/properties/edit`
 - `src/hooks/useOwnerPanel.ts`
-- Visible para usuarios autenticados dentro de `/dashboard`.
-- Incluye:
-  - Datos de plan y perfil (`/me`)
-  - Mis propiedades y vencimientos (`/properties/my`)
-  - Crear/editar propiedad
-  - Activar/desactivar propiedad
-  - Aprobar propiedad (si rol admin)
-  - Soft delete de propiedad
-  - Crear/listar/desactivar alertas
-  - Renovacion de publicaciones (normal/featured + 15/30/60 dias)
-  - Redireccion a checkout de Mercado Pago para destacados
+- Detalle completo en `README-propiedades.md`.
 
 ### Listings pagos (nuevo)
 
@@ -122,10 +115,14 @@ src/
 - Incluye:
   - Vista mobile (cards) y desktop (tabla)
   - Crear usuario
-  - Editar usuario (sin password)
-  - Activar/desactivar (`active`) con confirmacion
+  - Editar usuario (permite resetear contrasena opcional)
+  - Override de plan (heredar del cliente o definir `FREE/INMOBILIARIA/BROKER`)
+  - Vencimiento de plan + `subscriptionStatus`
+  - Activar/desactivar con confirmacion (`DELETE /users/:id` + `PUT /users/:id`)
   - Badges por rol
   - Toast simple de exito/error
+  - Planes soportados por backend: `FREE`, `INMOBILIARIA`, `BROKER`
+  - Guia detallada: `README-create-usuario.md`
 
 ## Endpoints usados por frontend
 
@@ -167,6 +164,8 @@ Usuarios (admin):
 - `GET /users`
 - `POST /users`
 - `PUT /users/:id`
+- `DELETE /users/:id`
+- `GET /roles`
 - `GET /clients/me`
 
 ## Testing
@@ -187,12 +186,17 @@ npm test
 
 - `/login`
 - `/dashboard`
+- `/panel`
+- `/panel/profile`
+- `/panel/properties`
+- `/panel/properties/create`
+- `/panel/properties/:id/edit`
+- `/panel/alerts`
 - `/users` (protegida + rol admin)
 
 ## Notas
 
 - Si el usuario autenticado no trae `role` o `roleId = "admin"`, no podra entrar a `/users`.
 - El frontend espera backend con JWT en `Authorization: Bearer <token>`.
-- Actualmente el formulario de propietario solicita `cityId` (UUID) manual.
-- Proximo paso recomendado: integrar endpoint de catalogo de ciudades y reemplazar `cityId` manual por selector.
+- El formulario de propietario carga ciudades via `GET /locations/cities` (por ahora solo Santa Fe).
 - El orden de listados publicos no se altera en frontend; se respeta el orden entregado por backend (`isFeatured DESC`, `createdAt DESC`).

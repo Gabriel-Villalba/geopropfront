@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { propertyApi } from '../../services/api';
 import { getApiErrorMessage } from '../../services/backend';
 import type { CreatePublicationPropertyType, CreatePublicationState } from './types';
@@ -99,13 +99,37 @@ function hasStepThreeRequiredFields(state: CreatePublicationState): boolean {
   return typeof state.banos === 'number' && state.banos >= 0;
 }
 
-export function useCreatePublication() {
+type PublicationMode = 'create' | 'edit';
+
+interface UseCreatePublicationOptions {
+  mode?: PublicationMode;
+  initialState?: Partial<CreatePublicationState>;
+  propertyId?: string;
+}
+
+export function useCreatePublication(options?: UseCreatePublicationOptions) {
+  const mode: PublicationMode = options?.mode ?? 'create';
+  const mergedInitialState = useMemo<CreatePublicationState>(() => {
+    return {
+      ...initialState,
+      ...options?.initialState,
+      imagenes: options?.initialState?.imagenes ?? [],
+    };
+  }, [options?.initialState]);
+
   const [currentStep, setCurrentStep] = useState(1);
-  const [state, setState] = useState<CreatePublicationState>(initialState);
+  const [state, setState] = useState<CreatePublicationState>(mergedInitialState);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitWarning, setSubmitWarning] = useState<string | null>(null);
   const [createdPropertyId, setCreatedPropertyId] = useState<string | null>(null);
+  const [hasHydrated, setHasHydrated] = useState(false);
+
+  useEffect(() => {
+    if (hasHydrated || !options?.initialState) return;
+    setState(mergedInitialState);
+    setHasHydrated(true);
+  }, [hasHydrated, mergedInitialState, options?.initialState]);
 
   const updateField = <K extends keyof CreatePublicationState>(field: K, value: CreatePublicationState[K]) => {
     setState((prev) => {
@@ -143,7 +167,7 @@ export function useCreatePublication() {
 
   const reset = () => {
     setCurrentStep(1);
-    setState(initialState);
+    setState(mergedInitialState);
     setIsSubmitting(false);
     setSubmitError(null);
     setSubmitWarning(null);
@@ -202,20 +226,60 @@ export function useCreatePublication() {
     };
 
     try {
-      const created = await propertyApi.create(payload);
-      setCreatedPropertyId(created.id);
+      const warnings: string[] = [];
+      const propertyId = options?.propertyId;
+
+      if (mode === 'edit') {
+        if (!propertyId) {
+          setSubmitError('No se encontro la propiedad a editar.');
+          return false;
+        }
+
+        const updated = await propertyApi.update(propertyId, payload);
+        setCreatedPropertyId(updated.id ?? propertyId);
+
+        if (state.imagenes.length > 0) {
+          const uploads = await Promise.allSettled(
+            state.imagenes.map((file) => propertyApi.uploadImage(propertyId, file)),
+          );
+          const failedUploads = uploads.filter((result) => result.status === 'rejected').length;
+
+          if (failedUploads > 0) {
+            warnings.push(
+              `La propiedad se actualizo, pero ${failedUploads} de ${state.imagenes.length} imagen(es) no se pudieron subir.`,
+            );
+          }
+        }
+
+        if (warnings.length > 0) {
+          setSubmitWarning(warnings.join(' '));
+        }
+
+        return true;
+      }
+
+      const created = await propertyApi.createWithActivation(payload);
+      setCreatedPropertyId(created.property.id);
+
+      if (created.message) {
+        warnings.push(created.message);
+      }
 
       if (state.imagenes.length > 0) {
         const uploads = await Promise.allSettled(
-          state.imagenes.map((file) => propertyApi.uploadImage(created.id, file)),
+          state.imagenes.map((file) => propertyApi.uploadImage(created.property.id, file)),
         );
         const failedUploads = uploads.filter((result) => result.status === 'rejected').length;
 
         if (failedUploads > 0) {
-          setSubmitWarning(
+          warnings.push(
             `La propiedad se creo, pero ${failedUploads} de ${state.imagenes.length} imagen(es) no se pudieron subir.`,
           );
         }
+      }
+
+      if (warnings.length > 0) {
+        setSubmitWarning(warnings.join(' '));
       }
 
       return true;
