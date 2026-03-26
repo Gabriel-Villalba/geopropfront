@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import api from '../services/api';
+import api, { requestWithRetry } from '../services/api';
 import { getApiErrorMessage } from '../services/backend';
 import type { ApiResponse, CreateUserPayload, UpdateUserPayload, UserClient, UserRecord, UserRole } from '../types';
 
@@ -40,17 +40,25 @@ export function useUsers() {
   const [roles, setRoles] = useState<UserRole[]>([]);
   const [clients, setClients] = useState<UserClient[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRetrying, setIsRetrying] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const getUsers = useCallback(async () => {
     setIsLoading(true);
+    setIsRetrying(false);
     setError(null);
 
     try {
       const [usersResponse, clientResponse, rolesResponse] = await Promise.all([
-        api.get<ApiResponse<UserRecord[]>>('/users'),
-        api.get<ApiResponse<UserClient>>('/clients/me'),
-        api.get<ApiResponse<UserRole[]>>('/roles'),
+        requestWithRetry(() => api.get<ApiResponse<UserRecord[]>>('/users'), {
+          onRetry: () => setIsRetrying(true),
+        }),
+        requestWithRetry(() => api.get<ApiResponse<UserClient>>('/clients/me'), {
+          onRetry: () => setIsRetrying(true),
+        }),
+        requestWithRetry(() => api.get<ApiResponse<UserRole[]>>('/roles'), {
+          onRetry: () => setIsRetrying(true),
+        }),
       ]);
 
       const safeUsers = usersResponse.data.data ?? [];
@@ -68,6 +76,7 @@ export function useUsers() {
       setClients([]);
     } finally {
       setIsLoading(false);
+      setIsRetrying(false);
     }
   }, []);
 
@@ -150,6 +159,7 @@ export function useUsers() {
     roles,
     clients,
     isLoading,
+    isRetrying,
     error,
     getUsers,
     createUser,

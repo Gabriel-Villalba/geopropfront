@@ -81,6 +81,7 @@ export interface BackendMe {
   role: string | null;
   name: string;
   email: string;
+  phone?: string | null;
   active: boolean;
   plan: 'FREE' | 'INMOBILIARIA' | 'BROKER';
   planExpiresAt?: string | null;

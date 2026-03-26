@@ -1,8 +1,8 @@
 import { useCallback, useState } from 'react';
-import { alertApi, meApi, propertyApi } from '../services/api';
+import { alertApi, clientApi, meApi, propertyApi, userApi } from '../services/api';
 import type { BackendAlert, BackendMe, BackendProperty } from '../services/backend';
 import { getApiErrorMessage } from '../services/backend';
-import type { CreatePaymentPreferencePayload, ExpiringProperty, RenewListingPayload } from '../types';
+import type { CreatePaymentPreferencePayload, ExpiringProperty, RenewListingPayload, UpdateUserPayload, UserPlan } from '../types';
 
 interface PanelMessage {
   type: 'success' | 'error';
@@ -17,6 +17,7 @@ export function useOwnerPanel() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSavingProperty, setIsSavingProperty] = useState(false);
   const [isSavingAlert, setIsSavingAlert] = useState(false);
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [listingActionPropertyId, setListingActionPropertyId] = useState<string | null>(null);
   const [message, setMessage] = useState<PanelMessage | null>(null);
 
@@ -38,6 +39,7 @@ export function useOwnerPanel() {
         role: me.role ?? null,
         name: me.name,
         email: me.email,
+        phone: me.phone ?? null,
         active: Boolean(me.active),
         plan: me.plan ?? 'FREE',
         planExpiresAt: me.planExpiresAt,
@@ -56,6 +58,77 @@ export function useOwnerPanel() {
       setIsLoading(false);
     }
   }, []);
+
+  const updateProfile = useCallback(
+    async (payload: {
+      name: string;
+      email: string;
+      phone?: string | null;
+      password?: string;
+      plan?: UserPlan;
+      planExpiresAt?: string | null;
+      subscriptionStatus?: string | null;
+    }) => {
+      if (!profile) {
+        return null;
+      }
+
+      setIsSavingProfile(true);
+      setMessage(null);
+
+      try {
+        const userPayload: UpdateUserPayload = {
+          name: payload.name,
+          email: payload.email,
+          phone: payload.phone ?? null,
+        };
+
+        if (payload.password) {
+          userPayload.password = payload.password;
+        }
+
+        await userApi.update(profile.id, userPayload);
+
+        const shouldUpdatePlan =
+          payload.plan &&
+          (payload.plan !== profile.plan ||
+            payload.planExpiresAt !== profile.planExpiresAt ||
+            payload.subscriptionStatus !== profile.subscriptionStatus);
+
+        if (shouldUpdatePlan) {
+          await clientApi.updateMe({
+            plan: payload.plan,
+            planExpiresAt: payload.planExpiresAt ?? null,
+            subscriptionStatus: payload.subscriptionStatus ?? null,
+          });
+        }
+
+        const me = await meApi.getMe();
+        setProfile({
+          id: me.id,
+          clientId: me.clientId ?? '',
+          roleId: me.roleId,
+          role: me.role ?? null,
+          name: me.name,
+          email: me.email,
+          phone: me.phone ?? null,
+          active: Boolean(me.active),
+          plan: me.plan ?? 'FREE',
+          planExpiresAt: me.planExpiresAt,
+          subscriptionStatus: me.subscriptionStatus,
+        });
+        localStorage.setItem('user', JSON.stringify(me));
+        setMessage({ type: 'success', text: 'Perfil actualizado correctamente.' });
+        return me;
+      } catch (error) {
+        setMessage({ type: 'error', text: getApiErrorMessage(error) });
+        throw error;
+      } finally {
+        setIsSavingProfile(false);
+      }
+    },
+    [profile],
+  );
 
   const createProperty = useCallback(
     async (payload: Record<string, unknown>) => {
@@ -244,9 +317,11 @@ export function useOwnerPanel() {
     isLoading,
     isSavingProperty,
     isSavingAlert,
+    isSavingProfile,
     listingActionPropertyId,
     message,
     loadPanel,
+    updateProfile,
     createProperty,
     updateProperty,
     activateProperty,

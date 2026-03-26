@@ -116,6 +116,7 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  phone?: string | null;
   clientId?: string;
   roleId?: string;
   role?: string;
@@ -145,6 +146,7 @@ export interface UserRecord {
   id: string;
   name: string;
   email: string;
+  phone?: string | null;
   roleId: string;
   clientId: string;
   active: boolean;
@@ -177,6 +179,7 @@ export interface UpdateUserPayload {
   roleId?: string;
   active?: boolean;
   password?: string;
+  phone?: string | null;
   plan?: UserPlan | null;
   planExpiresAt?: string | null;
   subscriptionStatus?: string | null;

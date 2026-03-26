@@ -3,16 +3,14 @@ import { Filters, Navbar, Pagination, PropertyCard, PropertyModal } from '../com
 import { useFilters } from '../hooks/useFilters';
 import { usePagination } from '../hooks/usePagination';
 import { useProperties } from '../hooks/useProperties';
-import { PackageOpen, Search } from 'lucide-react';
+import { PackageOpen, Search, TrendingUp } from 'lucide-react';
 import type { Property } from '../types';
 import { PublishPropertyCTA } from '../components/PublishPropertyCTA';
 
 export function Dashboard() {
   const { filters, params, updateFilter, resetFilters } = useFilters();
-  const { properties, isLoading, error, hasFetched, fetchProperties } = useProperties();
-
+  const { properties, isLoading, isRetrying, error, hasFetched, fetchProperties } = useProperties();
   const { visibleItems, currentPage, totalPages, totalCount, goToPage } = usePagination(properties, 6);
-
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const initialParamsRef = useRef(params);
 
@@ -30,67 +28,104 @@ export function Dashboard() {
   }, [fetchProperties, resetFilters]);
 
   return (
-    <div className="min-h-screen bg-white/30 pt-20 backdrop-blur-sm sm:pt-24">
+    <div className="min-h-screen bg-surface-soft pt-16">
       <Navbar />
 
-      <main className="mx-auto max-w-7xl px-4 pb-8 sm:px-6 lg:px-8">
-        <header className="mb-6 space-y-4">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">GeoProp: El mapa de tu futura propiedad.</h1>
-              <p className="mt-2 text-gray-600">
-               Explorá, filtrá y compará cientos de inmuebles. Simple, rápido y sin vueltas.
+      <main className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
+
+        {/* Hero header */}
+        <header className="py-10 sm:py-14">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+            <div className="space-y-2 max-w-xl">
+              <div className="inline-flex items-center gap-2 bg-brand-50 text-brand-600 text-xs font-semibold px-3 py-1.5 rounded-full border border-brand-100">
+                <TrendingUp className="w-3.5 h-3.5" />
+                Rafaela, Santa Fe
+              </div>
+              <h1 className="font-display font-bold text-3xl sm:text-4xl text-ink tracking-tight leading-tight">
+                Encontrá tu próxima<br className="hidden sm:block" /> propiedad
+              </h1>
+              <p className="text-ink-muted text-base leading-relaxed">
+                Explorá, filtrá y compará cientos de inmuebles. Simple, rápido y sin vueltas.
               </p>
             </div>
-
             <PublishPropertyCTA />
           </div>
         </header>
 
+        {/* Filters */}
         <Filters filters={filters} onChange={updateFilter} onSubmit={handleSubmit} onReset={handleReset} isLoading={isLoading} />
 
-        {error && <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>}
+        {/* Error */}
+        {error && (
+          <div className="mt-5 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
 
-        <section className="mt-10">
+        {/* Results */}
+        <section className="mt-8">
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center rounded-2xl bg-white py-16 shadow">
-              <div className="h-12 w-12 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600"></div>
-              <p className="mt-4 text-gray-600">Buscando propiedades...</p>
+            <div className="flex flex-col items-center justify-center rounded-2xl bg-white border border-gray-100 py-20 shadow-card">
+              <div className="w-10 h-10 rounded-full border-2 border-brand-200 border-t-brand-500 animate-spin" />
+              <p className="mt-4 text-sm text-ink-muted">
+                {isRetrying ? 'Reintentando conexión...' : 'Cargando...'}
+              </p>
             </div>
           ) : hasFetched ? (
             properties.length > 0 ? (
               <div>
-                <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <h2 className="text-xl font-semibold text-gray-900">{totalCount} Resultados</h2>
-                  <p className="text-sm text-gray-500">Mostrando {visibleItems.length} resultados</p>
+                <div className="mb-5 flex items-center justify-between">
+                  <h2 className="font-display font-semibold text-lg text-ink">
+                    {totalCount} resultado{totalCount !== 1 ? 's' : ''}
+                  </h2>
+                  <p className="text-sm text-ink-muted">Mostrando {visibleItems.length}</p>
                 </div>
 
-                <div key={currentPage} className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                <div key={currentPage} className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                   {visibleItems.map((property, index) => (
-                    <PropertyCard key={property.id} property={property} index={index} onClick={() => setSelectedProperty(property)} />
+                    <PropertyCard
+                      key={property.id}
+                      property={property}
+                      index={index}
+                      onClick={() => setSelectedProperty(property)}
+                    />
                   ))}
                 </div>
 
                 <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={goToPage} />
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center rounded-2xl bg-white py-16 shadow">
-                <PackageOpen className="mb-4 h-16 w-16 text-gray-300" />
-                <h3 className="text-lg font-semibold text-gray-900">No se encontraron propiedades</h3>
-                <p className="mt-2 text-center text-gray-600">Ajusta los filtros para ver mas resultados.</p>
-              </div>
+              <EmptyState
+                icon={<PackageOpen className="w-10 h-10 text-ink-faint" />}
+                title="Sin resultados"
+                description="Ajustá los filtros para ver más propiedades."
+              />
             )
           ) : (
-            <div className="flex flex-col items-center justify-center rounded-2xl bg-white py-16 shadow">
-              <Search className="mb-4 h-16 w-16 text-gray-300" />
-              <h3 className="text-lg font-semibold text-gray-900">Empieza a explorar</h3>
-              <p className="mt-2 text-center text-gray-600">Aplica filtros para buscar propiedades en Rafaela.</p>
-            </div>
+            <EmptyState
+              icon={<Search className="w-10 h-10 text-ink-faint" />}
+              title="Empezá a explorar"
+              description="Aplicá filtros para buscar propiedades en Rafaela y zona."
+            />
           )}
         </section>
       </main>
 
-      {selectedProperty && <PropertyModal property={selectedProperty} onClose={() => setSelectedProperty(null)} />}
+      {selectedProperty && (
+        <PropertyModal property={selectedProperty} onClose={() => setSelectedProperty(null)} />
+      )}
+    </div>
+  );
+}
+
+function EmptyState({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center rounded-2xl bg-white border border-gray-100 py-20 shadow-card text-center px-6">
+      <div className="mb-4 p-4 bg-surface-muted rounded-2xl">
+        {icon}
+      </div>
+      <h3 className="font-display font-semibold text-lg text-ink">{title}</h3>
+      <p className="mt-2 text-sm text-ink-muted max-w-xs">{description}</p>
     </div>
   );
 }

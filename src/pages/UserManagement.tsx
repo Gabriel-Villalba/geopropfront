@@ -165,7 +165,7 @@ function roleBadgeClass(roleName: string): string {
 
 export function UserManagement() {
   const { user, isLoading: authLoading } = useAuth();
-  const { users, roles, clients, isLoading, error, getUsers, createUser, updateUser, toggleUserStatus } = useUsers();
+  const { users, roles, clients, isLoading, isRetrying, error, getUsers, createUser, updateUser, toggleUserStatus } = useUsers();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserRecord | null>(null);
@@ -351,7 +351,9 @@ export function UserManagement() {
         {isLoading ? (
           <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
             <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-cyan-200 border-t-cyan-600"></div>
-            <p className="mt-4 text-sm text-slate-600">Cargando usuarios...</p>
+            <p className="mt-4 text-sm text-slate-600">
+              {isRetrying ? 'Reintentando conexión...' : 'Cargando...'}
+            </p>
           </div>
         ) : (
           <>

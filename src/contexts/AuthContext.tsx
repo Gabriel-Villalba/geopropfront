@@ -9,6 +9,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (payload: RegisterCredentials) => Promise<User>;
+  updateUser: (nextUser: User) => void;
   logout: () => void;
 }
 
@@ -101,6 +102,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
+  const updateUser = (nextUser: User) => {
+    localStorage.setItem('user', JSON.stringify(nextUser));
+    setUser(nextUser);
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -109,6 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         login,
         register,
+        updateUser,
         logout,
       }}
     >

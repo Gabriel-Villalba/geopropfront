@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { MapPin } from 'lucide-react';
+import { AnimatePresence, cubicBezier, motion } from 'framer-motion';
+import { MapPin, ChevronDown, SlidersHorizontal, Search, RotateCcw } from 'lucide-react';
 import type { FiltersFormState } from '../hooks/useFilters';
 import { useSantaFeCities } from '../hooks/useSantaFeCities';
 
@@ -14,13 +14,7 @@ interface FiltersProps {
 
 type DropdownType = 'price' | 'operation' | 'type' | 'advanced' | null;
 
-const baseButton =
-  'w-full md:w-44 text-center  border border-orange-500 px-4 py-3 text-sm font-semibold transition';
-
-type ValidPropertyType = Exclude<
-  FiltersFormState['type'],
-  ''
->;
+type ValidPropertyType = Exclude<FiltersFormState['type'], ''>;
 
 const typeLabel: Record<ValidPropertyType, string> = {
   casa: 'Casa',
@@ -30,10 +24,17 @@ const typeLabel: Record<ValidPropertyType, string> = {
   'galpon-deposito': 'Galpón/Depósito',
 };
 
+const dropdownMotion = {
+  initial: { opacity: 0, y: -8, scale: 0.97 },
+  animate: { opacity: 1, y: 0, scale: 1 },
+  exit: { opacity: 0, y: -8, scale: 0.97 },
+  transition: { duration: 0.18, ease: cubicBezier(0.22, 1, 0.36, 1) },
+};
+
 export function Filters({ filters, onChange, onSubmit, onReset, isLoading }: FiltersProps) {
   const [openDropdown, setOpenDropdown] = useState<DropdownType>(null);
   const wrapperRef = useRef<HTMLFormElement>(null);
-  const { cities, isLoadingCities, citiesError, reloadCities } = useSantaFeCities();
+  const { cities, isLoadingCities, isRetryingCities, citiesError, reloadCities } = useSantaFeCities();
 
   useEffect(() => {
     if (!filters.city || cities.length === 0) return;
@@ -48,57 +49,57 @@ export function Filters({ filters, onChange, onSubmit, onReset, isLoading }: Fil
         setOpenDropdown(null);
       }
     }
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const toggle = (key: DropdownType) => setOpenDropdown(openDropdown === key ? null : key);
+
+  const FilterButton = ({
+    id,
+    label,
+    active,
+  }: {
+    id: DropdownType;
+    label: string;
+    active?: boolean;
+  }) => (
+    <button
+      type="button"
+      onClick={() => toggle(id)}
+      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all duration-150 whitespace-nowrap ${
+        openDropdown === id || active
+          ? 'bg-brand-500 text-white border-brand-500 shadow-sm'
+          : 'bg-white text-ink border-gray-200 hover:border-brand-300 hover:bg-brand-50'
+      }`}
+    >
+      {label}
+      <ChevronDown className={`w-3.5 h-3.5 transition-transform ${openDropdown === id ? 'rotate-180' : ''}`} />
+    </button>
+  );
+
   return (
     <form
       ref={wrapperRef}
-      onSubmit={(event) => {
-        event.preventDefault();
-        onSubmit();
-      }}
-      className="relative bg-white/30 p-4 shadow backdrop-blur"
+      onSubmit={(e) => { e.preventDefault(); onSubmit(); }}
+      className="bg-white rounded-2xl border border-gray-100 shadow-card p-4"
     >
-      <div className="flex flex-col gap-4 md:flex-row md:items-end">
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => setOpenDropdown(openDropdown === 'operation' ? null : 'operation')}
-            className={`${baseButton} ${
-              openDropdown === 'operation' ? 'bg-orange-500 text-white rounded-none' : 'bg-white text-gray-700 hover:bg-orange-50 rounded-none'
-            }`}
-          >
-            {filters.operation === 'venta' ? 'Comprar' : filters.operation === 'alquiler' ? 'Alquilar' : 'Operacion'}
-          </button>
+      <div className="flex flex-wrap gap-2 items-center">
 
+        {/* Operation */}
+        <div className="relative">
+          <FilterButton
+            id="operation"
+            label={filters.operation === 'venta' ? 'Comprar' : filters.operation === 'alquiler' ? 'Alquilar' : 'Operación'}
+            active={!!filters.operation}
+          />
           <AnimatePresence>
             {openDropdown === 'operation' && (
-              <motion.div
-                initial={{ opacity: 0, scaleY: 0 }}
-                animate={{ opacity: 1, scaleY: 1 }}
-                exit={{ opacity: 0, scaleY: 0 }}
-                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                style={{ transformOrigin: 'top' }}
-                className="absolute left-0 z-50 mt-2 w-48 bg-orange-500 p-2 shadow-lg rounded-none"
-              >
-                {[
-                  { value: '', label: 'Todas' },
-                  { value: 'venta', label: 'Comprar' },
-                  { value: 'alquiler', label: 'Alquilar' },
-                ].map((operation) => (
-                  <button
-                    key={operation.value}
-                    type="button"
-                    onClick={() => {
-                      onChange('operation', operation.value);
-                      setOpenDropdown(null);
-                    }}
-                    className="w-full px-3 py-2 text-center text-sm text-white transition hover:bg-orange-400 rounded-none"
-                  >
-                    {operation.label}
+              <motion.div {...dropdownMotion} className="absolute left-0 z-50 mt-2 w-44 bg-white rounded-xl shadow-modal border border-gray-100 py-1 overflow-hidden">
+                {[{ value: '', label: 'Todas' }, { value: 'venta', label: 'Comprar' }, { value: 'alquiler', label: 'Alquilar' }].map((op) => (
+                  <button key={op.value} type="button" onClick={() => { onChange('operation', op.value); setOpenDropdown(null); }}
+                    className={`w-full px-4 py-2.5 text-left text-sm transition hover:bg-surface-soft ${filters.operation === op.value ? 'text-brand-600 font-semibold' : 'text-ink'}`}>
+                    {op.label}
                   </button>
                 ))}
               </motion.div>
@@ -106,44 +107,16 @@ export function Filters({ filters, onChange, onSubmit, onReset, isLoading }: Fil
           </AnimatePresence>
         </div>
 
+        {/* Type */}
         <div className="relative">
-          <button
-            type="button"
-            onClick={() => setOpenDropdown(openDropdown === 'type' ? null : 'type')}
-            className={`${baseButton} ${
-              openDropdown === 'type' ? 'bg-orange-500 text-white rounded-none' : 'bg-white text-gray-700 hover:bg-orange-50 rounded-none'
-            }`}
-          >
-            {filters.type ? typeLabel[filters.type] : 'Tipo'}
-          </button>
-
+          <FilterButton id="type" label={filters.type ? typeLabel[filters.type] : 'Tipo'} active={!!filters.type} />
           <AnimatePresence>
             {openDropdown === 'type' && (
-              <motion.div
-                initial={{ opacity: 0, scaleY: 0 }}
-                animate={{ opacity: 1, scaleY: 1 }}
-                exit={{ opacity: 0, scaleY: 0 }}
-                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                style={{ transformOrigin: 'top' }}
-                className="absolute left-0 z-50 mt-2 w-56 bg-orange-500 p-2 shadow-lg"
-              >
-                {[
-                  { value: 'casa', label: 'Casa' },
-                  { value: 'departamento', label: 'Departamento' },
-                  { value: 'comercial', label: 'Local Comercial' },
-                  { value: 'lote', label: 'Lote' },
-                  { value: 'galpon-deposito', label: 'Galpón/Depósito' },
-                ].map((item) => (
-                  <button
-                    key={item.value}
-                    type="button"
-                    onClick={() => {
-                      onChange('type', item.value);
-                      setOpenDropdown(null);
-                    }}
-                    className="w-full px-3 py-2 text-left text-sm text-white transition hover:bg-orange-400"
-                  >
-                    {item.label}
+              <motion.div {...dropdownMotion} className="absolute left-0 z-50 mt-2 w-52 bg-white rounded-xl shadow-modal border border-gray-100 py-1 overflow-hidden">
+                {Object.entries(typeLabel).map(([value, label]) => (
+                  <button key={value} type="button" onClick={() => { onChange('type', value); setOpenDropdown(null); }}
+                    className={`w-full px-4 py-2.5 text-left text-sm transition hover:bg-surface-soft ${filters.type === value ? 'text-brand-600 font-semibold' : 'text-ink'}`}>
+                    {label}
                   </button>
                 ))}
               </motion.div>
@@ -151,156 +124,81 @@ export function Filters({ filters, onChange, onSubmit, onReset, isLoading }: Fil
           </AnimatePresence>
         </div>
 
-        <div className="relative">
-          <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+        {/* City */}
+        <div className="relative flex items-center">
+          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-brand-400 pointer-events-none z-10" />
           <select
             value={filters.city}
-            onChange={(event) => onChange('city', event.target.value)}
+            onChange={(e) => onChange('city', e.target.value)}
             disabled={isLoadingCities || Boolean(citiesError)}
-            className="w-full border border-orange-500 bg-white px-4 py-3 pl-9 text-sm text-gray-700 rounded-none disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
+            className="pl-8 pr-8 py-2.5 text-sm border border-gray-200 rounded-xl bg-white text-ink outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 transition appearance-none cursor-pointer disabled:bg-gray-50 disabled:text-ink-muted min-w-[200px]"
           >
             <option value="">
-              {isLoadingCities ? 'Cargando ciudades...' : 'Ciudad o localidad (Santa Fe)'}
+              {isRetryingCities ? 'Reintentando conexión...' : isLoadingCities ? 'Cargando...' : 'Ciudad / Localidad'}
             </option>
             {cities.map((city) => (
-              <option key={city.id} value={city.name}>
-                {city.name}
-              </option>
+              <option key={city.id} value={city.name}>{city.name}</option>
             ))}
           </select>
+          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-ink-faint pointer-events-none" />
         </div>
 
-        {citiesError && (
-          <div className="w-full border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 md:w-auto">
-            <p>No se pudieron cargar ciudades/localidades de Santa Fe.</p>
-            <p className="mt-1">{citiesError}</p>
-            <button
-              type="button"
-              onClick={() => void reloadCities()}
-              className="mt-2 border border-rose-300 px-2 py-1 font-semibold transition hover:bg-rose-100"
-            >
-              Reintentar
-            </button>
-          </div>
-        )}
-
+        {/* Price */}
         <div className="relative">
-          <button
-            type="button"
-            onClick={() => setOpenDropdown(openDropdown === 'price' ? null : 'price')}
-            className={`${baseButton} ${
-              openDropdown === 'price' ? 'bg-orange-500 text-white rounded-none' : 'bg-white text-gray-700 hover:bg-orange-50 rounded-none'
-            }`}
-          >
-            Precio
-          </button>
-
+          <FilterButton id="price" label="Precio" active={!!filters.minPrice || !!filters.maxPrice} />
           <AnimatePresence>
             {openDropdown === 'price' && (
-              <motion.div
-                initial={{ opacity: 0, scaleY: 0 }}
-                animate={{ opacity: 1, scaleY: 1 }}
-                exit={{ opacity: 0, scaleY: 0 }}
-                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                style={{ transformOrigin: 'top' }}
-                className="absolute left-0 top-12 z-50 w-64 bg-orange-500 p-4 shadow-xl"
-              >
-                <div className="flex flex-col gap-3">
-                  <input
-                    type="number"
-                    placeholder="Precio minimo"
-                    value={filters.minPrice}
-                    onChange={(event) => onChange('minPrice', event.target.value)}
-                    className="bg-white px-3 py-2 text-sm focus:outline-none"
-                  />
-
-                  <input
-                    type="number"
-                    placeholder="Precio maximo"
-                    value={filters.maxPrice}
-                    onChange={(event) => onChange('maxPrice', event.target.value)}
-                    className="bg-white px-3 py-2 text-sm focus:outline-none"
-                  />
+              <motion.div {...dropdownMotion} className="absolute left-0 z-50 mt-2 w-64 bg-white rounded-xl shadow-modal border border-gray-100 p-4">
+                <p className="text-xs font-semibold text-ink-muted uppercase tracking-wide mb-3">Rango de precio</p>
+                <div className="space-y-2">
+                  <input type="number" placeholder="Mínimo" value={filters.minPrice} onChange={(e) => onChange('minPrice', e.target.value)}
+                    className="input-base" />
+                  <input type="number" placeholder="Máximo" value={filters.maxPrice} onChange={(e) => onChange('maxPrice', e.target.value)}
+                    className="input-base" />
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
+        {/* Advanced */}
         <div className="relative">
           <button
             type="button"
-            onClick={() => setOpenDropdown(openDropdown === 'advanced' ? null : 'advanced')}
-            className={`${baseButton} ${
-              openDropdown === 'advanced' ? 'bg-orange-500 text-white rounded-none' : 'bg-white text-gray-700 hover:bg-orange-50 rounded-none'
+            onClick={() => toggle('advanced')}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all duration-150 ${
+              openDropdown === 'advanced' ? 'bg-brand-500 text-white border-brand-500' : 'bg-white text-ink border-gray-200 hover:border-brand-300 hover:bg-brand-50'
             }`}
           >
-            Mas filtros
+            <SlidersHorizontal className="w-3.5 h-3.5" />
+            Más filtros
           </button>
-
           <AnimatePresence>
             {openDropdown === 'advanced' && (
-              <motion.div
-                initial={{ opacity: 0, scaleY: 0 }}
-                animate={{ opacity: 1, scaleY: 1 }}
-                exit={{ opacity: 0, scaleY: 0 }}
-                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                style={{ transformOrigin: 'top' }}
-                className="absolute left-0 top-12 z-50 w-72 bg-orange-500 p-4 shadow-xl"
-              >
-                <div className="flex flex-col gap-4 text-sm text-white">
+              <motion.div {...dropdownMotion} className="absolute left-0 z-50 mt-2 w-72 bg-white rounded-xl shadow-modal border border-gray-100 p-4">
+                <p className="text-xs font-semibold text-ink-muted uppercase tracking-wide mb-3">Filtros avanzados</p>
+                <div className="space-y-3">
                   <div>
-                    <label className="mb-1 block font-semibold">Dormitorios minimos</label>
-                    <input
-                      type="number"
-                      placeholder="Ej: 2"
-                      value={filters.minBedrooms}
-                      onChange={(event) => onChange('minBedrooms', event.target.value)}
-                      className="w-full bg-white px-3 py-2 text-gray-700"
-                    />
+                    <label className="text-xs font-medium text-ink-muted mb-1 block">Dormitorios mínimos</label>
+                    <input type="number" placeholder="Ej: 2" value={filters.minBedrooms} onChange={(e) => onChange('minBedrooms', e.target.value)} className="input-base" />
                   </div>
-
                   <div>
-                    <label className="mb-1 block font-semibold">Cocheras minimas</label>
-                    <input
-                      type="number"
-                      placeholder="Ej: 1"
-                      value={filters.minParking}
-                      onChange={(event) => onChange('minParking', event.target.value)}
-                      className="w-full bg-white px-3 py-2 text-gray-700"
-                    />
+                    <label className="text-xs font-medium text-ink-muted mb-1 block">Cocheras mínimas</label>
+                    <input type="number" placeholder="Ej: 1" value={filters.minParking} onChange={(e) => onChange('minParking', e.target.value)} className="input-base" />
                   </div>
-
                   <div>
-                    <label className="mb-1 block font-semibold">Area total (m2)</label>
+                    <label className="text-xs font-medium text-ink-muted mb-1 block">Área total (m²)</label>
                     <div className="flex gap-2">
-                      <input
-                        type="number"
-                        placeholder="Desde"
-                        value={filters.minArea}
-                        onChange={(event) => onChange('minArea', event.target.value)}
-                        className="w-full bg-white px-3 py-2 text-gray-700"
-                      />
-                      <input
-                        type="number"
-                        placeholder="Hasta"
-                        value={filters.maxArea}
-                        onChange={(event) => onChange('maxArea', event.target.value)}
-                        className="w-full bg-white px-3 py-2 text-gray-700"
-                      />
+                      <input type="number" placeholder="Desde" value={filters.minArea} onChange={(e) => onChange('minArea', e.target.value)} className="input-base" />
+                      <input type="number" placeholder="Hasta" value={filters.maxArea} onChange={(e) => onChange('maxArea', e.target.value)} className="input-base" />
                     </div>
                   </div>
-
                   <div>
-                    <label className="mb-1 block font-semibold">Tipo de anunciante</label>
-                    <select
-                      value={filters.publisherType}
-                      onChange={(event) => onChange('publisherType', event.target.value)}
-                      className="w-full bg-white px-3 py-2 text-gray-700"
-                    >
+                    <label className="text-xs font-medium text-ink-muted mb-1 block">Tipo de anunciante</label>
+                    <select value={filters.publisherType} onChange={(e) => onChange('publisherType', e.target.value)} className="select-base">
                       <option value="">Todos</option>
                       <option value="inmobiliaria">Inmobiliaria</option>
-                      <option value="particular">Dueno directo</option>
+                      <option value="particular">Dueño directo</option>
                     </select>
                   </div>
                 </div>
@@ -309,22 +207,35 @@ export function Filters({ filters, onChange, onSubmit, onReset, isLoading }: Fil
           </AnimatePresence>
         </div>
 
-        <button
-          type="button"
-          onClick={onReset}
-          className="w-full  border border-orange-500 px-4 py-3 text-center text-sm font-semibold text-gray-700 transition hover:bg-gray-100 md:w-32"
-        >
-          Limpiar
+        {/* Spacer */}
+        <div className="flex-1" />
+
+        {/* Actions */}
+        <button type="button" onClick={onReset} className="btn-ghost gap-1.5">
+          <RotateCcw className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Limpiar</span>
         </button>
 
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="w-full bg-orange-500 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-orange-600 disabled:opacity-60 md:w-44"
-        >
-          {isLoading ? 'Buscando...' : 'Buscar'}
+        <button type="submit" disabled={isLoading} className="btn-primary disabled:opacity-60">
+          <Search className="w-4 h-4" />
+          {isLoading ? 'Buscando…' : 'Buscar'}
         </button>
       </div>
+
+      {citiesError && (
+        <div className="mt-3 flex items-center justify-between border border-red-100 bg-red-50 rounded-xl px-4 py-3 text-xs text-red-700">
+          <span>No se pudieron cargar las ciudades.</span>
+          <button type="button" onClick={() => void reloadCities()} className="font-semibold underline ml-3">
+            Reintentar
+          </button>
+        </div>
+      )}
+
+      {isRetryingCities && !citiesError && (
+        <div className="mt-3 rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-xs text-amber-700">
+          Reintentando conexión...
+        </div>
+      )}
     </form>
   );
 }

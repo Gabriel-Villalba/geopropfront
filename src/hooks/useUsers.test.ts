@@ -10,6 +10,7 @@ const mockedApi = vi.hoisted(() => ({
 
 vi.mock('../services/api', () => ({
   default: mockedApi,
+  requestWithRetry: (fn: () => Promise<unknown>) => fn(),
 }));
 
 describe('useUsers', () => {

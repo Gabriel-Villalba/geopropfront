@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Bath, BedDouble, CarFront, MapPin, Maximize2 } from 'lucide-react';
+import { Bath, BedDouble, CarFront, MapPin, Maximize2, ArrowUpRight } from 'lucide-react';
 import { FeaturedBadge } from '../features/listings';
 import type { Property } from '../types';
 
@@ -17,7 +17,7 @@ const formatPrice = (amount?: number | null, currency?: string | null) => {
 const getImageUrl = (property: Property) =>
   property.images?.[0] ||
   property.image ||
-  'https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=900&q=80';
+  'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=900&q=80';
 
 export function PropertyCard({ property, onClick, index }: PropertyCardProps) {
   const imageUrl = getImageUrl(property);
@@ -27,21 +27,17 @@ export function PropertyCard({ property, onClick, index }: PropertyCardProps) {
   return (
     <motion.article
       onClick={onClick}
-      initial={{
-        opacity: 0,
-        x: index % 3 === 0 ? -80 : index % 3 === 2 ? 80 : 0,
-        y: 40,
-      }}
-      animate={{ opacity: 1, x: 0, y: 0 }}
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{
-        type: 'spring',
-        stiffness: 70,
-        damping: 18,
-        delay: Math.floor(index / 3) * 0.25,
+        duration: 0.35,
+        ease: [0.22, 1, 0.36, 1],
+        delay: (index % 6) * 0.06,
       }}
-      className="group cursor-pointer overflow-hidden border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+      className="group cursor-pointer bg-surface-card rounded-2xl overflow-hidden shadow-card border border-gray-100 hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-300"
     >
-      <div className="relative h-52 w-full overflow-hidden">
+      {/* Image */}
+      <div className="relative h-48 overflow-hidden bg-surface-muted">
         <img
           src={imageUrl}
           alt={property.title}
@@ -49,61 +45,78 @@ export function PropertyCard({ property, onClick, index }: PropertyCardProps) {
           loading="lazy"
         />
 
+        {/* Operation badge */}
+        {property.operation && (
+          <span className="absolute left-3 top-3 bg-white/95 backdrop-blur-sm text-ink text-[11px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-lg shadow-sm">
+            {property.operation === 'venta' ? 'Venta' : property.operation === 'alquiler' ? 'Alquiler' : property.operation}
+          </span>
+        )}
+
+        {/* Property type */}
         {property.type && (
-          <span className="absolute left-4 top-4 rounded-full border border-orange-500 bg-white/90 px-3 py-1 text-xs font-semibold uppercase text-gray-700 shadow">
+          <span className="absolute left-3 bottom-3 bg-ink/80 backdrop-blur-sm text-white text-[11px] font-medium uppercase tracking-wide px-2.5 py-1 rounded-lg">
             {property.type}
           </span>
         )}
-        <FeaturedBadge isFeatured={isFeatured} className="absolute right-4 top-4" />
 
-        <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition group-hover:opacity-100">
-          <span className="rounded-xl border border-orange-500 bg-white px-4 py-2 text-sm font-semibold">Ver mas</span>
+        <FeaturedBadge isFeatured={isFeatured} className="absolute right-3 top-3" />
+
+        {/* Hover overlay */}
+        <div className="absolute inset-0 bg-ink/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+          <span className="flex items-center gap-1.5 bg-white text-ink text-sm font-semibold px-4 py-2 rounded-xl shadow-lg">
+            Ver propiedad
+            <ArrowUpRight className="w-4 h-4" />
+          </span>
         </div>
       </div>
 
-      <div className="space-y-4 p-5">
-        <div className="text-xl font-bold text-gray-900">{formatPrice(property.price?.amount, property.price?.currency)}</div>
+      {/* Content */}
+      <div className="p-4 space-y-3">
+        {/* Price */}
+        <div className="font-display font-bold text-xl text-ink tracking-tight">
+          {formatPrice(property.price?.amount, property.price?.currency)}
+        </div>
 
-        <div className="flex items-center gap-2 text-sm text-gray-600">
-          <MapPin className="h-4 w-4 text-blue-600" />
-          <span>
+        {/* Location */}
+        <div className="flex items-center gap-1.5 text-sm text-ink-muted">
+          <MapPin className="h-3.5 w-3.5 text-brand-500 flex-shrink-0" />
+          <span className="truncate">
             {property.location?.city}
             {property.location?.locality ? `, ${property.location.locality}` : ''}
           </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
+        {/* Specs */}
+        <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm text-ink-muted">
           {property.specs?.totalArea && (
-            <div className="flex items-center gap-2">
-              <Maximize2 className="h-4 w-4 text-blue-600" />
-              <span>{property.specs.totalArea} m2</span>
+            <div className="flex items-center gap-1.5">
+              <Maximize2 className="h-3.5 w-3.5 text-brand-400" />
+              <span>{property.specs.totalArea} m²</span>
             </div>
           )}
-
           {property.specs?.bedrooms && (
-            <div className="flex items-center gap-2">
-              <BedDouble className="h-4 w-4 text-blue-600" />
+            <div className="flex items-center gap-1.5">
+              <BedDouble className="h-3.5 w-3.5 text-brand-400" />
               <span>{property.specs.bedrooms} dorm.</span>
             </div>
           )}
-
           {property.specs?.bathrooms && (
-            <div className="flex items-center gap-2">
-              <Bath className="h-4 w-4 text-blue-600" />
-              <span>{property.specs.bathrooms} banos</span>
+            <div className="flex items-center gap-1.5">
+              <Bath className="h-3.5 w-3.5 text-brand-400" />
+              <span>{property.specs.bathrooms} baños</span>
             </div>
           )}
-
           {property.specs?.parking && (
-            <div className="flex items-center gap-2">
-              <CarFront className="h-4 w-4 text-blue-600" />
+            <div className="flex items-center gap-1.5">
+              <CarFront className="h-3.5 w-3.5 text-brand-400" />
               <span>{property.specs.parking} coch.</span>
             </div>
           )}
         </div>
 
-        <div className="border-t pt-3 text-xs text-gray-500">
-          Publicado por <span className="font-semibold text-gray-800">{publisherName}</span>
+        {/* Publisher */}
+        <div className="pt-3 border-t border-gray-100 text-xs text-ink-muted">
+          Por <span className="font-medium text-ink">{publisherName}</span>
         </div>
       </div>
     </motion.article>
