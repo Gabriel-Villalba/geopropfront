@@ -1,29 +1,9 @@
-import { ArrowLeft, BadgeCheck, Mail, UserRound, Shield } from 'lucide-react';
+import { ArrowLeft, BadgeCheck, Mail, UserRound } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Navbar } from '../../../components';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useOwnerPanel } from '../../../hooks/useOwnerPanel';
-import type { UserPlan } from '../../../types';
-
-const PLAN_OPTIONS: Array<{ value: UserPlan; label: string; description: string }> = [
-  { value: 'FREE',         label: 'Free',         description: 'Acceso básico' },
-  { value: 'INMOBILIARIA', label: 'Inmobiliaria',  description: 'Para agencias' },
-  { value: 'BROKER',       label: 'Broker',        description: 'Máximo alcance' },
-];
-
-function toInputDateTimeValue(value?: string | null): string {
-  if (!value) return '';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '';
-  const offset = date.getTimezoneOffset() * 60_000;
-  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
-}
-function toIsoDateTime(value: string): string | null {
-  if (!value) return null;
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date.toISOString();
-}
 
 export default function EditProfilePage() {
   const navigate = useNavigate();
@@ -32,9 +12,6 @@ export default function EditProfilePage() {
   const [displayName, setDisplayName]           = useState('');
   const [email, setEmail]                       = useState('');
   const [contactPhone, setContactPhone]         = useState('');
-  const [plan, setPlan]                         = useState<UserPlan>('FREE');
-  const [planExpiresAt, setPlanExpiresAt]       = useState('');
-  const [subscriptionStatus, setSubscriptionStatus] = useState('');
   const [password, setPassword]                 = useState('');
 
   useEffect(() => { void loadPanel(); }, [loadPanel]);
@@ -42,9 +19,6 @@ export default function EditProfilePage() {
     setDisplayName(profile?.name ?? '');
     setEmail(profile?.email ?? '');
     setContactPhone(profile?.phone ?? '');
-    setPlan(profile?.plan ?? 'FREE');
-    setPlanExpiresAt(toInputDateTimeValue(profile?.planExpiresAt));
-    setSubscriptionStatus(profile?.subscriptionStatus ?? '');
     setPassword('');
   }, [profile]);
 
@@ -54,8 +28,6 @@ export default function EditProfilePage() {
       name: displayName.trim(), email: email.trim(),
       phone: contactPhone.trim() || null,
       password: password.trim() || undefined,
-      plan, planExpiresAt: planExpiresAt ? toIsoDateTime(planExpiresAt) : null,
-      subscriptionStatus: subscriptionStatus.trim() || null,
     });
     if (updated) updateUser(updated);
     setPassword('');
@@ -73,7 +45,7 @@ export default function EditProfilePage() {
         </button>
 
         <h1 className="font-display font-bold text-2xl text-ink tracking-tight mb-1">Editar perfil</h1>
-        <p className="text-sm text-ink-muted mb-8">Gestión básica del perfil y plan de la cuenta.</p>
+        <p className="text-sm text-ink-muted mb-8">Gestión básica del perfil.</p>
 
         {message && (
           <div className={`mb-6 px-4 py-3 rounded-xl text-sm border ${
@@ -146,39 +118,20 @@ export default function EditProfilePage() {
               </label>
             </div>
 
-            {/* Plan */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-5 space-y-4">
-              <h2 className="text-xs font-semibold uppercase tracking-widest text-ink-muted mb-2 flex items-center gap-2">
-                <Shield className="w-3.5 h-3.5" /> Plan y suscripción
-              </h2>
-
-              <div className="grid sm:grid-cols-3 gap-3">
-                {PLAN_OPTIONS.map((opt) => (
-                  <button key={opt.value} type="button" onClick={() => setPlan(opt.value)}
-                    className={`p-4 rounded-xl border text-left transition-all ${
-                      plan === opt.value
-                        ? 'border-brand-400 bg-brand-50 ring-1 ring-brand-300'
-                        : 'border-gray-100 bg-surface-soft hover:border-brand-200'
-                    }`}>
-                    <p className="font-semibold text-sm text-ink">{opt.label}</p>
-                    <p className="text-xs text-ink-muted mt-0.5">{opt.description}</p>
-                  </button>
-                ))}
-              </div>
-              <p className="text-xs text-ink-faint">Cambiar de plan no genera cobros en esta fase.</p>
-
-              <label className="block space-y-1.5">
-                <span className="text-sm font-medium text-ink">Vencimiento del plan</span>
-                <input type="datetime-local" value={planExpiresAt} onChange={(e) => setPlanExpiresAt(e.target.value)} className="input-base" />
-              </label>
-
-              <label className="block space-y-1.5">
-                <span className="text-sm font-medium text-ink">Estado de suscripción</span>
-                <input value={subscriptionStatus} onChange={(e) => setSubscriptionStatus(e.target.value)}
-                  placeholder="active" className="input-base" />
-              </label>
+            
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-5">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-ink-muted mb-2">Planes y suscripcion</h2>
+              <p className="text-sm text-ink-muted mb-4">
+                Administra tu plan, fechas y estado de suscripcion desde un lugar dedicado.
+              </p>
+              <button
+                type="button"
+                onClick={() => navigate('/panel/plans')}
+                className="btn-primary w-full justify-center"
+              >
+                Planes y suscripcion
+              </button>
             </div>
-
             <button type="button" onClick={handleSave} disabled={isSavingProfile}
               className="btn-primary w-full justify-center py-3 disabled:opacity-60 disabled:cursor-not-allowed">
               {isSavingProfile
@@ -192,3 +145,6 @@ export default function EditProfilePage() {
     </div>
   );
 }
+
+
+
