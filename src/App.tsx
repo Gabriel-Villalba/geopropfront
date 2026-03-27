@@ -11,6 +11,7 @@ const UserManagement = lazy(async () => ({ default: (await import('./pages/UserM
 const PanelDashboard = lazy(() => import('./pages/panel/PanelDashboard'));
 const EditProfilePage = lazy(() => import('./pages/panel/profile/EditProfilePage'));
 const PlansPage = lazy(() => import('./pages/panel/profile/PlansPage'));
+const PublishLandingPage = lazy(() => import('./pages/panel/profile/PublishLandingPage'));
 const MyPropertiesPage = lazy(() => import('./pages/panel/properties/MyPropertiesPage'));
 const CreatePropertyRoute = lazy(() => import('./pages/panel/properties/create'));
 const EditPropertyRoute = lazy(() => import('./pages/panel/properties/edit'));
@@ -44,6 +45,7 @@ function App() {
                 <Route path="/panel/profile" element={<ProtectedRoute><EditProfilePage /></ProtectedRoute>} />
                 <Route path="/panel/plans" element={<ProtectedRoute><PlansPage /></ProtectedRoute>} />
                 <Route path="/panel/properties" element={<ProtectedRoute><MyPropertiesPage /></ProtectedRoute>} />
+                <Route path="/panel/properties/publish" element={<ProtectedRoute><PublishLandingPage /></ProtectedRoute>} />
                 <Route path="/panel/properties/create" element={<ProtectedRoute><CreatePropertyRoute /></ProtectedRoute>} />
                 <Route path="/panel/properties/:id/edit" element={<ProtectedRoute><EditPropertyRoute /></ProtectedRoute>} />
                 <Route path="/panel/alerts" element={<ProtectedRoute><CreateAlertPage /></ProtectedRoute>} />

@@ -35,7 +35,7 @@ const cards: PanelActionCard[] = [
     title: 'Crear publicación',
     description: 'Iniciá una nueva publicación con flujo guiado paso a paso.',
     icon: Home,
-    to: '/panel/properties/create',
+    to: '/panel/properties/publish',
     accent: 'bg-brand-50 text-brand-600',
   },
   {

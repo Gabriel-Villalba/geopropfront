@@ -10,7 +10,7 @@ export function PublishPropertyCTA() {
 
   const handleClick = () => {
     if (!isAuthenticated) { setShowModal(true); return; }
-    navigate('/panel/properties/create');
+    navigate('/panel/properties/publish');
   };
 
   return (
@@ -41,7 +41,7 @@ export function PublishPropertyCTA() {
                 className="btn-outline flex-1 justify-center">
                 Cancelar
               </button>
-              <button onClick={() => { setShowModal(false); navigate('/login?redirect=/panel/properties/create'); }}
+              <button onClick={() => { setShowModal(false); navigate('/login?redirect=/panel/properties/publish'); }}
                 className="btn-primary flex-1 justify-center">
                 Iniciar sesión
               </button>

@@ -5,6 +5,7 @@ Esta carpeta implementa la nueva arquitectura modular del panel en rutas indepen
 - `/panel`: dashboard visual con accesos.
 - `/panel/profile`: gestion de perfil.
 - `/panel/properties`: administracion de propiedades existentes.
+- `/panel/properties/publish`: landing previa para iniciar una nueva publicacion.
 - `/panel/properties/create`: entrada al wizard de creacion.
 - `/panel/alerts`: gestion de alertas.
 

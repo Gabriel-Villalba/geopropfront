@@ -121,7 +121,7 @@ export default function MyPropertiesPage() {
 
           <button
             type="button"
-            onClick={() => navigate('/panel/properties/create')}
+            onClick={() => navigate('/panel/properties/publish')}
             className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
           >
             <Plus className="h-4 w-4" />
