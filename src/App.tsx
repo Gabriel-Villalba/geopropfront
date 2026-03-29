@@ -17,6 +17,7 @@ const CreatePropertyRoute = lazy(() => import('./pages/panel/properties/create')
 const EditPropertyRoute = lazy(() => import('./pages/panel/properties/edit'));
 const CreateAlertPage = lazy(() => import('./pages/panel/alerts/CreateAlertPage'));
 const CustomCursor = lazy(() => import('./components/CustomCursor'));
+const PropertyDetailPage = lazy(() => import('./pages/PropertyDetailPage'));
 
 function AppLoader() {
   return (
@@ -40,6 +41,7 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/dashboard" element={<><CustomCursor /><Dashboard /></>} />
+                <Route path="/properties/:id" element={<PropertyDetailPage />} />
                 <Route path="/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
                 <Route path="/panel" element={<ProtectedRoute><PanelDashboard /></ProtectedRoute>} />
                 <Route path="/panel/profile" element={<ProtectedRoute><EditProfilePage /></ProtectedRoute>} />

@@ -1,17 +1,17 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Filters, Navbar, Pagination, PropertyCard, PropertyModal } from '../components';
+import { useCallback, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Filters, Navbar, Pagination, PropertyCard } from '../components';
 import { useFilters } from '../hooks/useFilters';
 import { usePagination } from '../hooks/usePagination';
 import { useProperties } from '../hooks/useProperties';
 import { PackageOpen, Search, TrendingUp } from 'lucide-react';
-import type { Property } from '../types';
 import { PublishPropertyCTA } from '../components/PublishPropertyCTA';
 
 export function Dashboard() {
   const { filters, params, updateFilter, resetFilters } = useFilters();
   const { properties, isLoading, isRetrying, error, hasFetched, fetchProperties } = useProperties();
   const { visibleItems, currentPage, totalPages, totalCount, goToPage } = usePagination(properties, 6);
-  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const navigate = useNavigate();
   const initialParamsRef = useRef(params);
 
   useEffect(() => {
@@ -87,7 +87,7 @@ export function Dashboard() {
                       key={property.id}
                       property={property}
                       index={index}
-                      onClick={() => setSelectedProperty(property)}
+                      onClick={() => navigate(`/properties/${property.id}`, { state: { property } })}
                     />
                   ))}
                 </div>
@@ -111,9 +111,6 @@ export function Dashboard() {
         </section>
       </main>
 
-      {selectedProperty && (
-        <PropertyModal property={selectedProperty} onClose={() => setSelectedProperty(null)} />
-      )}
     </div>
   );
 }

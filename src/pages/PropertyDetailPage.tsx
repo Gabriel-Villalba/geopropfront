@@ -1,17 +1,15 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   Bath, BedDouble, CalendarClock, CarFront, ChevronLeft, ChevronRight,
   Home, LandPlot, LayoutGrid, MapPin, Maximize2, MessageCircle,
-  ArrowLeft, Send, User, Phone, Mail, ChevronDown, ChevronUp,
+  ArrowLeft, Send, User, Mail, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import { Navbar } from '../components';
-import { Footer } from '../components/Footer';
 import type { Property } from '../types';
 
-interface PropertyDetailPageProps {
-  property: Property;
-  onBack?: () => void;
+interface PropertyDetailPageLocationState {
+  property?: Property;
 }
 
 /* ── helpers ── */
@@ -31,13 +29,41 @@ const formatCount = (value: number | null | undefined, singular: string, plural:
 /* ── contact form state ── */
 interface ContactForm {
   name: string;
-  phone: string;
   email: string;
   message: string;
 }
 
-export default function PropertyDetailPage({ property, onBack }: PropertyDetailPageProps) {
+export default function PropertyDetailPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { id } = useParams();
+  const state = location.state as PropertyDetailPageLocationState | null;
+  const property = state?.property;
+
+  if (!property) {
+    return (
+      <div className="min-h-screen flex flex-col bg-surface-soft">
+        <Navbar />
+
+        <main className="flex-1 pt-16">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-8 text-center">
+              <h1 className="font-display font-semibold text-xl text-ink">No encontramos esa propiedad</h1>
+              <p className="mt-2 text-sm text-ink-muted">
+                {id ? `La propiedad ${id} no estÃ¡ disponible o expirÃ³.` : 'VolvÃ© al listado para buscar otra opciÃ³n.'}
+              </p>
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="mt-6 inline-flex items-center justify-center px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-ink hover:bg-surface-muted transition-colors"
+              >
+                Volver al listado
+              </button>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   /* Gallery */
   const images =
@@ -49,7 +75,7 @@ export default function PropertyDetailPage({ property, onBack }: PropertyDetailP
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showDescription, setShowDescription] = useState(false);
-  const [form, setForm] = useState<ContactForm>({ name: '', phone: '', email: '', message: '' });
+  const [form, setForm] = useState<ContactForm>({ name: '', email: '', message: '' });
   const [sent, setSent] = useState(false);
 
   const goPrev = () => setCurrentIndex((p) => (p === 0 ? images.length - 1 : p - 1));
@@ -77,9 +103,24 @@ export default function PropertyDetailPage({ property, onBack }: PropertyDetailP
   ].filter((s) => Boolean(s.value));
 
   /* fake submit — reemplazá con tu lógica */
+  const locationLabel = property.subtitle
+    ? property.subtitle
+    : [property.location?.locality, property.location?.city].filter(Boolean).join(', ');
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: conectar con API
+    const propertyLine = locationLabel
+      ? `Hola, me interesa la propiedad ${property.title} - ubicada en ${locationLabel}.`
+      : `Hola, me interesa la propiedad ${property.title}.`;
+    const text = [
+      propertyLine,
+      `Nombre: ${form.name}`,
+      `Email: ${form.email}`,
+      `Mensaje: ${form.message}`,
+    ].join('\n');
+
+    const whatsappUrl = `https://wa.me/3492588185?text=${encodeURIComponent(text)}`;
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
     setSent(true);
   };
 
@@ -92,7 +133,7 @@ export default function PropertyDetailPage({ property, onBack }: PropertyDetailP
 
           {/* ── Back ── */}
           <button
-            onClick={onBack ?? (() => navigate(-1))}
+            onClick={() => navigate(-1)}
             className="mb-6 inline-flex items-center gap-2 text-sm text-ink-muted hover:text-ink transition-colors font-medium"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -224,7 +265,7 @@ export default function PropertyDetailPage({ property, onBack }: PropertyDetailP
             <div className="space-y-5">
 
               {/* Price card */}
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-6 sticky top-24">
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-6">
                 <p className="text-xs text-ink-muted mb-1">Precio</p>
                 <p className="font-display font-bold text-3xl text-ink tracking-tight">
                   {formatPrice(property.price?.amount, property.price?.currency)}
@@ -281,19 +322,6 @@ export default function PropertyDetailPage({ property, onBack }: PropertyDetailP
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-ink-muted">Teléfono</label>
-                      <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-ink-faint" />
-                        <input
-                          value={form.phone}
-                          onChange={(e) => set('phone', e.target.value)}
-                          placeholder="+54 9 3492 ..."
-                          className="input-base pl-9 text-sm py-2.5"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-1.5">
                       <label className="text-xs font-medium text-ink-muted">Email</label>
                       <div className="relative">
                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-ink-faint" />
@@ -335,8 +363,6 @@ export default function PropertyDetailPage({ property, onBack }: PropertyDetailP
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }
