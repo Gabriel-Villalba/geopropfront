@@ -1,8 +1,9 @@
-import { Bell, Building2, ChevronRight, Home, UserCog, Sparkles } from 'lucide-react';
+import { Bell, Building2, ChevronRight, Home, MessageCircle, UserCog, Sparkles } from 'lucide-react';
 import type { ComponentType } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Navbar } from '../../components';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNotifications } from '../../contexts/NotificationsContext';
 
 interface PanelActionCard {
   id: string;
@@ -31,6 +32,22 @@ const cards: PanelActionCard[] = [
     accent: 'bg-blue-50 text-blue-600',
   },
   {
+    id: 'notifications',
+    title: 'Notificaciones',
+    description: 'Consultas y novedades recientes de tus propiedades.',
+    icon: Bell,
+    to: '/panel/notifications',
+    accent: 'bg-emerald-50 text-emerald-600',
+  },
+  {
+    id: 'inquiries',
+    title: 'Consultas',
+    description: 'Revisá las consultas recibidas por tus propiedades.',
+    icon: MessageCircle,
+    to: '/panel/inquiries',
+    accent: 'bg-emerald-50 text-emerald-600',
+  },
+  {
     id: 'create',
     title: 'Crear publicación',
     description: 'Iniciá una nueva publicación con flujo guiado paso a paso.',
@@ -51,6 +68,7 @@ const cards: PanelActionCard[] = [
 export default function PanelDashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { unreadCount } = useNotifications();
 
   const getInitials = (name?: string) => {
     if (!name) return '?';
@@ -88,8 +106,13 @@ export default function PanelDashboard() {
                 key={card.id}
                 type="button"
                 onClick={() => navigate(card.to)}
-                className="group bg-white rounded-2xl border border-gray-100 p-5 text-left shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+                className="group relative bg-white rounded-2xl border border-gray-100 p-5 text-left shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
               >
+                {card.id === 'notifications' && unreadCount && unreadCount > 0 && (
+                  <span className="absolute top-4 right-4 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-semibold text-white">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
                 <div className="flex items-start justify-between gap-3">
                   <div className={`p-2.5 rounded-xl ${card.accent}`}>
                     <Icon className="h-5 w-5" />

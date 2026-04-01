@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { NotificationsProvider } from './contexts/NotificationsContext';
 import { Footer, ProtectedRoute } from './components';
 import { HomeRedirect } from './components/HomeRedirect';
 
@@ -18,6 +19,8 @@ const EditPropertyRoute = lazy(() => import('./pages/panel/properties/edit'));
 const CreateAlertPage = lazy(() => import('./pages/panel/alerts/CreateAlertPage'));
 const CustomCursor = lazy(() => import('./components/CustomCursor'));
 const PropertyDetailPage = lazy(() => import('./pages/PropertyDetailPage'));
+const InquiriesPage = lazy(() => import('./pages/panel/inquiries/InquiriesPage'));
+const NotificationsPage = lazy(() => import('./pages/panel/notifications/NotificationsPage'));
 
 function AppLoader() {
   return (
@@ -34,10 +37,11 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <div className="min-h-screen flex flex-col">
-          <div className="flex-1">
-            <Suspense fallback={<AppLoader />}>
-              <Routes>
+        <NotificationsProvider>
+          <div className="min-h-screen flex flex-col">
+            <div className="flex-1">
+              <Suspense fallback={<AppLoader />}>
+                <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/dashboard" element={<><CustomCursor /><Dashboard /></>} />
@@ -47,17 +51,21 @@ function App() {
                 <Route path="/panel/profile" element={<ProtectedRoute><EditProfilePage /></ProtectedRoute>} />
                 <Route path="/panel/plans" element={<ProtectedRoute><PlansPage /></ProtectedRoute>} />
                 <Route path="/panel/properties" element={<ProtectedRoute><MyPropertiesPage /></ProtectedRoute>} />
+                <Route path="/panel/inquiries" element={<ProtectedRoute><InquiriesPage /></ProtectedRoute>} />
+                <Route path="/panel/properties/:id/inquiries" element={<ProtectedRoute><InquiriesPage /></ProtectedRoute>} />
+                <Route path="/panel/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
                 <Route path="/panel/properties/publish" element={<ProtectedRoute><PublishLandingPage /></ProtectedRoute>} />
                 <Route path="/panel/properties/create" element={<ProtectedRoute><CreatePropertyRoute /></ProtectedRoute>} />
                 <Route path="/panel/properties/:id/edit" element={<ProtectedRoute><EditPropertyRoute /></ProtectedRoute>} />
                 <Route path="/panel/alerts" element={<ProtectedRoute><CreateAlertPage /></ProtectedRoute>} />
                 <Route path="/" element={<HomeRedirect />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </Suspense>
+                </Routes>
+              </Suspense>
+            </div>
+            <Footer />
           </div>
-          <Footer />
-        </div>
+        </NotificationsProvider>
       </AuthProvider>
     </BrowserRouter>
   );

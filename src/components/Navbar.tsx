@@ -1,10 +1,12 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { LogIn, LogOut, Users, LayoutDashboard } from 'lucide-react';
+import { LogIn, LogOut, Users, LayoutDashboard, Bell } from 'lucide-react';
+import { useNotifications } from '../contexts/NotificationsContext';
 
 export function Navbar() {
   const { user, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const { unreadCount } = useNotifications();
 
   const handleLogout = () => {
     logout();
@@ -63,6 +65,20 @@ export function Navbar() {
                 <button onClick={() => navigate('/panel')} className="btn-ghost" title="Mi panel">
                   <LayoutDashboard className="w-4 h-4" />
                   <span className="hidden sm:inline">Panel</span>
+                </button>
+
+                <button
+                  onClick={() => navigate('/panel/notifications')}
+                  className="btn-ghost relative"
+                  title="Notificaciones"
+                >
+                  <Bell className="w-4 h-4" />
+                  <span className="hidden sm:inline">Notificaciones</span>
+                  {unreadCount && unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 rounded-full bg-emerald-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
                 </button>
 
                 <button

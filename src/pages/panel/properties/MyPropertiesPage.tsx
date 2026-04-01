@@ -1,4 +1,4 @@
-import { ArrowLeft, Plus } from 'lucide-react';
+import { ArrowLeft, MessageCircle, Plus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Navbar } from '../../../components';
@@ -119,14 +119,24 @@ export default function MyPropertiesPage() {
             Volver al panel
           </button>
 
-          <button
-            type="button"
-            onClick={() => navigate('/panel/properties/publish')}
-            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
-          >
-            <Plus className="h-4 w-4" />
-            Nueva publicacion
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => navigate('/panel/inquiries')}
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
+              <MessageCircle className="h-4 w-4" />
+              Ver consultas
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/panel/properties/publish')}
+              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
+            >
+              <Plus className="h-4 w-4" />
+              Nueva publicacion
+            </button>
+          </div>
         </div>
 
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -222,6 +232,13 @@ export default function MyPropertiesPage() {
                       className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
                     >
                       Editar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/panel/properties/${entry.id}/inquiries`, { state: { propertyTitle: entry.title } })}
+                      className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                    >
+                      Consultas
                     </button>
                     <button
                       type="button"

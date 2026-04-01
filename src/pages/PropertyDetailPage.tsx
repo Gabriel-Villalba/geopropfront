@@ -6,6 +6,8 @@ import {
   ArrowLeft, Send, User, Mail, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import { Navbar } from '../components';
+import { inquiryApi } from '../services/api';
+import { getApiErrorMessage } from '../services/backend';
 import type { Property } from '../types';
 
 interface PropertyDetailPageLocationState {
@@ -77,6 +79,8 @@ export default function PropertyDetailPage() {
   const [showDescription, setShowDescription] = useState(false);
   const [form, setForm] = useState<ContactForm>({ name: '', email: '', message: '' });
   const [sent, setSent] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const goPrev = () => setCurrentIndex((p) => (p === 0 ? images.length - 1 : p - 1));
   const goNext = () => setCurrentIndex((p) => (p === images.length - 1 ? 0 : p + 1));
@@ -107,21 +111,39 @@ export default function PropertyDetailPage() {
     ? property.subtitle
     : [property.location?.locality, property.location?.city].filter(Boolean).join(', ');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+    setSubmitError(null);
+    setIsSubmitting(true);
+
     const propertyLine = locationLabel
       ? `Hola, me interesa la propiedad ${property.title} - ubicada en ${locationLabel}.`
       : `Hola, me interesa la propiedad ${property.title}.`;
-    const text = [
-      propertyLine,
-      `Nombre: ${form.name}`,
-      `Email: ${form.email}`,
-      `Mensaje: ${form.message}`,
-    ].join('\n');
 
-    const whatsappUrl = `https://wa.me/3492588185?text=${encodeURIComponent(text)}`;
-    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
-    setSent(true);
+    try {
+      await inquiryApi.createForProperty(String(property.id), {
+        name: form.name,
+        email: form.email,
+        message: form.message,
+        source: 'web',
+      });
+
+      const text = [
+        propertyLine,
+        `Nombre: ${form.name.trim()}`,
+        `Email: ${form.email.trim()}`,
+        `Mensaje: ${form.message.trim()}`,
+      ].join('\n');
+
+      const whatsappUrl = `https://wa.me/3492588185?text=${encodeURIComponent(text)}`;
+      window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+      setSent(true);
+    } catch (error) {
+      setSubmitError(getApiErrorMessage(error));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -293,6 +315,12 @@ export default function PropertyDetailPage() {
               <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-6">
                 <h2 className="font-display font-semibold text-base text-ink mb-1">Enviar consulta</h2>
                 <p className="text-xs text-ink-muted mb-5">El anunciante recibirá tu mensaje directamente.</p>
+                {submitError && (
+                  <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-700">
+                    {submitError}
+                  </div>
+                )}
+
 
                 {sent ? (
                   <div className="flex flex-col items-center justify-center py-8 text-center gap-3">
@@ -350,10 +378,11 @@ export default function PropertyDetailPage() {
 
                     <button
                       type="submit"
-                      className="btn-primary w-full justify-center py-2.5 mt-1"
+                      disabled={isSubmitting}
+                      className="btn-primary w-full justify-center py-2.5 mt-1 disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                       <Send className="w-3.5 h-3.5" />
-                      Enviar consulta
+                      {isSubmitting ? 'Enviando...' : 'Enviar consulta'}
                     </button>
                   </form>
                 )}
@@ -366,3 +395,5 @@ export default function PropertyDetailPage() {
     </div>
   );
 }
+
+

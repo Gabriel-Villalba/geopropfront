@@ -3,14 +3,19 @@ import type {
   AuthResponse,
   City,
   CreatePaymentPreferencePayload,
+  CreateInquiryPayload,
   ExpiringProperty,
+  InquiryListParams,
   LoginCredentials,
+  PaginatedResponse,
   PaymentPreference,
   Property,
   PropertyFilters,
+  PropertyInquiry,
   Province,
   RegisterCredentials,
   RenewListingPayload,
+  NotificationItem,
   User,
   UpdateUserPayload,
   UserPlan,
@@ -232,6 +237,33 @@ function normalizeAuthPayload<T extends AuthPayload>(p: T): T {
   return base as T;
 }
 
+function normalizeInquiryPayload(payload: CreateInquiryPayload): CreateInquiryPayload {
+  const normalized: CreateInquiryPayload = { ...payload };
+
+  if (typeof payload.name === 'string') {
+    normalized.name = payload.name.trim();
+  }
+
+  if (typeof payload.email === 'string') {
+    normalized.email = payload.email.trim().toLowerCase();
+  }
+
+  if (typeof payload.phone === 'string') {
+    normalized.phone = payload.phone.trim();
+  }
+
+  if (typeof payload.message === 'string') {
+    normalized.message = payload.message.trim();
+  }
+
+  if (typeof payload.source === 'string') {
+    const source = payload.source.trim();
+    normalized.source = source ? source : undefined;
+  }
+
+  return normalized;
+}
+
 export const authApi = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
     const payload = normalizeAuthPayload(credentials) as LoginCredentials;
@@ -430,6 +462,88 @@ export const propertyApi = {
   },
   remove: async (id: string): Promise<void> => {
     await requestWithRetry(() => api.delete<BackendApiResponse<{ id: string }>>(`/properties/${id}`));
+  },
+};
+
+export const inquiryApi = {
+  createForProperty: async (propertyId: string, payload: CreateInquiryPayload): Promise<PropertyInquiry> => {
+    const normalized = normalizeInquiryPayload(payload);
+    const response = await requestWithRetry(() =>
+      api.post<BackendApiResponse<PropertyInquiry>>(`/properties/${propertyId}/inquiries`, normalized),
+    );
+    return extractApiData(response);
+  },
+  create: async (payload: CreateInquiryPayload): Promise<PropertyInquiry> => {
+    const normalized = normalizeInquiryPayload(payload);
+    const response = await requestWithRetry(() =>
+      api.post<BackendApiResponse<PropertyInquiry>>('/inquiries', normalized),
+    );
+    return extractApiData(response);
+  },
+  list: async (params?: InquiryListParams): Promise<{ items: PropertyInquiry[]; pagination: PaginatedResponse<PropertyInquiry[]>['pagination'] }> => {
+    const response = await requestWithRetry(() =>
+      api.get<PaginatedResponse<PropertyInquiry[]>>('/inquiries', { params }),
+    );
+
+    if (!response.data.success) {
+      throw new Error(response.data.error ?? 'No se pudo completar la operacion.');
+    }
+
+    return {
+      items: response.data.data ?? [],
+      pagination: response.data.pagination,
+    };
+  },
+  listByProperty: async (
+    propertyId: string,
+    params?: InquiryListParams,
+  ): Promise<{ items: PropertyInquiry[]; pagination: PaginatedResponse<PropertyInquiry[]>['pagination'] }> => {
+    const response = await requestWithRetry(() =>
+      api.get<PaginatedResponse<PropertyInquiry[]>>(`/properties/${propertyId}/inquiries`, { params }),
+    );
+
+    if (!response.data.success) {
+      throw new Error(response.data.error ?? 'No se pudo completar la operacion.');
+    }
+
+    return {
+      items: response.data.data ?? [],
+      pagination: response.data.pagination,
+    };
+  },
+};
+
+export const notificationApi = {
+  list: async (params?: InquiryListParams): Promise<{ items: NotificationItem[]; pagination: PaginatedResponse<NotificationItem[]>['pagination'] }> => {
+    const response = await requestWithRetry(() =>
+      api.get<PaginatedResponse<NotificationItem[]>>('/notifications', { params }),
+    );
+
+    if (!response.data.success) {
+      throw new Error(response.data.error ?? 'No se pudo completar la operacion.');
+    }
+
+    return {
+      items: response.data.data ?? [],
+      pagination: response.data.pagination,
+    };
+  },
+  getUnreadCount: async (): Promise<number> => {
+    const response = await requestWithRetry(() => api.get<ApiResponse<{ count: number }>>('/notifications/unread-count'));
+    if (!response.data.success) {
+      throw new Error(response.data.error ?? 'No se pudo completar la operacion.');
+    }
+    return response.data.data?.count ?? 0;
+  },
+  markRead: async (id: string): Promise<void> => {
+    await requestWithRetry(() =>
+      api.patch<ApiResponse<{ id: string }>>(`/notifications/${id}/read`),
+    );
+  },
+  markAllRead: async (): Promise<void> => {
+    await requestWithRetry(() =>
+      api.post<ApiResponse<{ count: number }>>('/notifications/read-all'),
+    );
   },
 };
 

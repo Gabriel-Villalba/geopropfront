@@ -191,6 +191,74 @@ export interface ApiResponse<T> {
   error: string | null;
 }
 
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  pages: number;
+}
+
+export interface PaginatedResponse<T> {
+  success: boolean;
+  data: T;
+  pagination: PaginationMeta;
+  error: string | null;
+}
+
+export interface InquiryPropertySummary {
+  id: string;
+  title: string;
+  createdBy: string;
+  clientId: string;
+}
+
+export interface PropertyInquiry {
+  id: string;
+  propertyId: string;
+  clientId: string;
+  userId: string | null;
+  name: string | null;
+  email: string;
+  phone: string | null;
+  message: string;
+  source: string | null;
+  createdAt: string;
+  updatedAt: string;
+  property?: InquiryPropertySummary;
+}
+
+export interface CreateInquiryPayload {
+  propertyId?: string;
+  name?: string;
+  email?: string;
+  phone?: string;
+  message: string;
+  source?: string;
+}
+
+export interface InquiryListParams {
+  page?: number;
+  limit?: number;
+  from?: string;
+  to?: string;
+}
+
+export interface NotificationMetadata {
+  inquiryId?: string;
+  propertyId?: string;
+  propertyTitle?: string;
+}
+
+export interface NotificationItem {
+  id: string;
+  type: string;
+  title: string;
+  body: string;
+  metadata?: NotificationMetadata | null;
+  isRead: boolean;
+  createdAt: string;
+}
+
 export interface ExpiringProperty {
   propertyId: string;
   title: string;
