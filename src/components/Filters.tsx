@@ -143,6 +143,36 @@ export function Filters({ filters, onChange, onSubmit, onReset, isLoading }: Fil
           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-ink-faint pointer-events-none" />
         </div>
 
+        {/* Search */}
+        <div className="relative flex items-center">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-brand-400 pointer-events-none" />
+          <input
+            value={filters.search}
+            onChange={(e) => onChange('search', e.target.value)}
+            placeholder="Barrio, direcciÃ³n o descripciÃ³n"
+            className="pl-8 pr-3 py-2.5 text-sm border border-gray-200 rounded-xl bg-white text-ink outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 transition min-w-[220px]"
+          />
+        </div>
+
+        {/* Sort */}
+        <div className="relative flex items-center">
+          <select
+            value={`${filters.sortBy}:${filters.order}`}
+            onChange={(e) => {
+              const [sortBy, order] = e.target.value.split(':');
+              onChange('sortBy', sortBy);
+              onChange('order', order);
+            }}
+            className="pl-4 pr-8 py-2.5 text-sm border border-gray-200 rounded-xl bg-white text-ink outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 transition appearance-none cursor-pointer min-w-[180px]"
+          >
+            <option value="price:asc">Menor precio</option>
+            <option value="price:desc">Mayor precio</option>
+            <option value="createdAt:desc">MÃ¡s recientes</option>
+            <option value="area:desc">Mayor superficie</option>
+          </select>
+          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-ink-faint pointer-events-none" />
+        </div>
+
         {/* Price */}
         <div className="relative">
           <FilterButton id="price" label="Precio" active={!!filters.minPrice || !!filters.maxPrice} />

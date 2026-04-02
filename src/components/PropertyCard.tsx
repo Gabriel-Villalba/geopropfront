@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion';
-import { Bath, BedDouble, CarFront, MapPin, Maximize2, ArrowUpRight } from 'lucide-react';
+import { Bath, BedDouble, CarFront, MapPin, Maximize2, ArrowUpRight, Heart } from 'lucide-react';
 import { FeaturedBadge } from '../features/listings';
 import type { Property } from '../types';
+import { useFavorites } from '../hooks/useFavorites';
 
 interface PropertyCardProps {
   property: Property;
@@ -55,6 +56,8 @@ export function PropertyCard({ property, onClick, index }: PropertyCardProps) {
   const pricePerM2Covered = showCovered
     ? formatPricePerM2(property.price?.amount, property.specs?.coveredArea, property.price?.currency)
     : null;
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const favorite = isFavorite(property.id);
 
   return (
     <motion.article
@@ -92,6 +95,21 @@ export function PropertyCard({ property, onClick, index }: PropertyCardProps) {
         )}
 
         <FeaturedBadge isFeatured={isFeatured} className="absolute right-3 top-3" />
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            toggleFavorite(property);
+          }}
+          className={`absolute right-3 bottom-3 w-9 h-9 rounded-full border flex items-center justify-center transition ${
+            favorite
+              ? 'bg-rose-500 border-rose-500 text-white'
+              : 'bg-white/90 border-gray-200 text-ink hover:bg-white'
+          }`}
+          aria-label={favorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+        >
+          <Heart className="w-4 h-4" fill={favorite ? 'currentColor' : 'none'} />
+        </button>
 
         {/* Hover overlay */}
         <div className="absolute inset-0 bg-ink/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">

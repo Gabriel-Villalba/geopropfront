@@ -3,12 +3,14 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   Bath, BedDouble, CalendarClock, CarFront, ChevronLeft, ChevronRight,
   Home, LandPlot, LayoutGrid, MapPin, Maximize2, MessageCircle,
-  ArrowLeft, Send, User, Mail, ChevronDown, ChevronUp, BadgeCheck, Eye, Wallet,
+  ArrowLeft, Send, User, Mail, ChevronDown, ChevronUp, BadgeCheck, Eye, Wallet, Heart,
 } from 'lucide-react';
 import { Navbar } from '../components';
 import { inquiryApi, propertyApi } from '../services/api';
 import { getApiErrorMessage } from '../services/backend';
 import type { Property } from '../types';
+import { useFavorites } from '../hooks/useFavorites';
+import { useSantaFeCities } from '../hooks/useSantaFeCities';
 
 interface PropertyDetailPageLocationState {
   property?: Property;
@@ -106,6 +108,9 @@ export default function PropertyDetailPage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [views, setViews] = useState<number | null>(property.views ?? null);
   const hasTrackedView = useRef(false);
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const favorite = isFavorite(property.id);
+  const { cities } = useSantaFeCities();
 
   const goPrev = () => setCurrentIndex((p) => (p === 0 ? images.length - 1 : p - 1));
   const goNext = () => setCurrentIndex((p) => (p === images.length - 1 ? 0 : p + 1));
@@ -132,6 +137,14 @@ export default function PropertyDetailPage() {
     { label: 'estado',       value: property.condition === 'a_estrenar' ? 'A estrenar' : property.condition === 'usado' ? 'Usado' : property.condition === 'a_refaccionar' ? 'A refaccionar' : null, icon: BadgeCheck },
     { label: 'expensas',     value: formatMoney(property.specs?.expensesMonthly, property.price?.currency), icon: Wallet },
   ].filter((s) => Boolean(s.value));
+
+  const cityMatch = cities.find((city) => city.name === property.location?.city);
+  const lat = cityMatch?.latitude ? Number(cityMatch.latitude) : null;
+  const lng = cityMatch?.longitude ? Number(cityMatch.longitude) : null;
+  const hasMap = Number.isFinite(lat) && Number.isFinite(lng);
+  const mapUrl = hasMap
+    ? `https://www.openstreetmap.org/export/embed.html?bbox=${(lng as number) - 0.02}%2C${(lat as number) - 0.02}%2C${(lng as number) + 0.02}%2C${(lat as number) + 0.02}&layer=mapnik&marker=${lat}%2C${lng}`
+    : null;
 
   /* fake submit — reemplazá con tu lógica */
   const locationLabel = property.subtitle
@@ -369,6 +382,19 @@ export default function PropertyDetailPage() {
                   </div>
                 )}
 
+                <button
+                  type="button"
+                  onClick={() => toggleFavorite(property)}
+                  className={`mt-4 inline-flex items-center gap-2 rounded-xl border px-3.5 py-2 text-xs font-semibold transition ${
+                    favorite
+                      ? 'bg-rose-50 border-rose-200 text-rose-600'
+                      : 'bg-white border-gray-200 text-ink-muted hover:border-rose-200 hover:text-rose-600'
+                  }`}
+                >
+                  <Heart className="h-3.5 w-3.5" fill={favorite ? 'currentColor' : 'none'} />
+                  {favorite ? 'Guardado' : 'Guardar'}
+                </button>
+
                 <div className="mt-5 pt-5 border-t border-gray-100">
                   <p className="text-xs text-ink-muted mb-1">Publicado por</p>
                   <p className="font-semibold text-sm text-ink">{publisherName}</p>
@@ -466,6 +492,21 @@ export default function PropertyDetailPage() {
 
             </div>
           </div>
+
+          {hasMap && mapUrl && (
+            <div className="mt-8 bg-white rounded-2xl border border-gray-100 shadow-card overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-100">
+                <h2 className="text-xs font-semibold uppercase tracking-widest text-ink-muted">UbicaciÃ³n aproximada</h2>
+              </div>
+              <iframe
+                title="Mapa"
+                src={mapUrl}
+                className="w-full h-72"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
+          )}
         </div>
       </main>
     </div>

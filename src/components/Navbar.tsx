@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { LogIn, LogOut, Users, LayoutDashboard, Bell } from 'lucide-react';
+import { LogIn, LogOut, Users, LayoutDashboard, Bell, Heart } from 'lucide-react';
 import { useNotifications } from '../contexts/NotificationsContext';
 
 export function Navbar() {
@@ -81,6 +81,11 @@ export function Navbar() {
                   )}
                 </button>
 
+                <button onClick={() => navigate('/favoritos')} className="btn-ghost" title="Favoritos">
+                  <Heart className="w-4 h-4" />
+                  <span className="hidden sm:inline">Favoritos</span>
+                </button>
+
                 <button
                   onClick={() => navigate('/panel')}
                   title={user?.name}
@@ -95,10 +100,16 @@ export function Navbar() {
                 </button>
               </>
             ) : (
-              <button onClick={() => navigate('/login')} className="btn-primary">
-                <LogIn className="w-4 h-4" />
-                Iniciar sesión
-              </button>
+              <>
+                <button onClick={() => navigate('/favoritos')} className="btn-ghost">
+                  <Heart className="w-4 h-4" />
+                  <span className="hidden sm:inline">Favoritos</span>
+                </button>
+                <button onClick={() => navigate('/login')} className="btn-primary">
+                  <LogIn className="w-4 h-4" />
+                  Iniciar sesión
+                </button>
+              </>
             )}
           </div>
 

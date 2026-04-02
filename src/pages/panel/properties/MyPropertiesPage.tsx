@@ -1,9 +1,10 @@
-import { ArrowLeft, MessageCircle, Plus } from 'lucide-react';
+import { ArrowLeft, Heart, MessageCircle, Plus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Navbar } from '../../../components';
 import { useAuth } from '../../../contexts/AuthContext';
 import { ExpiringPropertiesAlert, RenewListingModal } from '../../../features/listings';
+import { useFavorites } from '../../../hooks/useFavorites';
 import { useOwnerPanel } from '../../../hooks/useOwnerPanel';
 import type { RenewListingPayload } from '../../../types';
 
@@ -78,6 +79,7 @@ export default function MyPropertiesPage() {
   const [renewModalType, setRenewModalType] = useState<'normal' | 'featured'>('normal');
   const [renewModalDuration, setRenewModalDuration] = useState<15 | 30 | 60>(30);
   const [integrationMessage, setIntegrationMessage] = useState<string | null>(null);
+  const { isFavorite } = useFavorites();
   const {
     profile,
     myProperties,
@@ -250,6 +252,12 @@ export default function MyPropertiesPage() {
                       <p className="text-sm text-slate-600">{entry.city?.name ?? entry.cityId}</p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
+                      {isFavorite(entry.id) && (
+                        <span className="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-600">
+                          <Heart className="h-3 w-3" />
+                          Favorito
+                        </span>
+                      )}
                       <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${statusBadge(entry.listing?.status ?? entry.status)}`}>
                         {entry.listing?.status ?? entry.status}
                       </span>

@@ -4,6 +4,7 @@ import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Navbar } from '../../../components';
 import { useOwnerPanel } from '../../../hooks/useOwnerPanel';
+import { useSantaFeCities } from '../../../hooks/useSantaFeCities';
 
 interface AlertDraft {
   cityId: string;
@@ -27,6 +28,7 @@ export default function CreateAlertPage() {
   const navigate = useNavigate();
   const { alerts, isLoading, isSavingAlert, message, loadPanel, createAlert, deactivateAlert } = useOwnerPanel();
   const [draft, setDraft] = useState<AlertDraft>(defaultAlertDraft);
+  const { cities, isLoadingCities, citiesError, reloadCities } = useSantaFeCities();
 
   useEffect(() => { void loadPanel(); }, [loadPanel]);
 
@@ -65,8 +67,37 @@ export default function CreateAlertPage() {
         <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-6 mb-8">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-ink-muted mb-5">Nueva alerta</h2>
           <form className="grid gap-4 sm:grid-cols-2" onSubmit={handleSubmit}>
-            <input required placeholder="City ID (UUID)" value={draft.cityId} onChange={(e) => set('cityId', e.target.value)}
-              className="input-base sm:col-span-2" />
+            <div className="sm:col-span-2">
+              <label className="text-xs font-medium text-ink-muted mb-1.5 block">Ciudad o localidad (Santa Fe)</label>
+              <select
+                required
+                value={draft.cityId}
+                onChange={(e) => set('cityId', e.target.value)}
+                disabled={isLoadingCities || Boolean(citiesError)}
+                className="select-base w-full disabled:cursor-not-allowed disabled:bg-gray-50"
+              >
+                <option value="">
+                  {isLoadingCities ? 'Cargando ciudades...' : 'Seleccionar ciudad o localidad'}
+                </option>
+                {cities.map((city) => (
+                  <option key={city.id} value={city.id}>
+                    {city.name}
+                  </option>
+                ))}
+              </select>
+              {citiesError && (
+                <div className="mt-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
+                  <p>{citiesError}</p>
+                  <button
+                    type="button"
+                    onClick={() => void reloadCities()}
+                    className="mt-2 rounded-md border border-rose-300 px-2 py-1 font-semibold transition hover:bg-rose-100"
+                  >
+                    Reintentar ciudades
+                  </button>
+                </div>
+              )}
+            </div>
 
             <div>
               <label className="text-xs font-medium text-ink-muted mb-1.5 block">Operación</label>
