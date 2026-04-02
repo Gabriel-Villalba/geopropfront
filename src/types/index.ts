@@ -58,11 +58,16 @@ export interface Property {
     bathrooms?: number | null;
     parking?: number | null;
     ageYears?: number | null;
+    expensesMonthly?: number | null;
   };
   image?: string | null;
   images?: string[];
   publisher?: Publisher;
   listing?: PropertyListing;
+  condition?: 'a_estrenar' | 'usado' | 'a_refaccionar' | null;
+  createdAt?: string | null;
+  publishedAt?: string | null;
+  views?: number | null;
 }
 
 export interface PropertyFilters {

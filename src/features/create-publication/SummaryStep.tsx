@@ -20,6 +20,18 @@ function displayNumber(value?: number | null): string {
   return `${value}`;
 }
 
+function displayCurrency(value?: string): string {
+  if (!value) return '-';
+  return value.toUpperCase();
+}
+
+function displayCondition(value?: string): string {
+  if (value === 'a_estrenar') return 'A estrenar';
+  if (value === 'usado') return 'Usado';
+  if (value === 'a_refaccionar') return 'A refaccionar';
+  return '-';
+}
+
 export function SummaryStep({ state }: StepProps) {
   return (
     <section className="space-y-4">
@@ -51,8 +63,29 @@ export function SummaryStep({ state }: StepProps) {
           <span className="font-semibold text-slate-900">Metros cuadrados:</span> {displayNumber(state.metrosCuadrados)}
         </p>
         <p>
-          <span className="font-semibold text-slate-900">Precio:</span> {displayNumber(state.precio)}
+          <span className="font-semibold text-slate-900">Metros cuadrados cubiertos:</span> {displayNumber(state.metrosCubiertos)}
         </p>
+        <p>
+          <span className="font-semibold text-slate-900">Precio:</span> {displayNumber(state.precio)} {displayCurrency(state.moneda)}
+        </p>
+        <p>
+          <span className="font-semibold text-slate-900">Estado:</span> {displayCondition(state.estadoInmueble)}
+        </p>
+        {typeof state.ambientes === 'number' && (
+          <p>
+            <span className="font-semibold text-slate-900">Ambientes:</span> {state.ambientes}
+          </p>
+        )}
+        {typeof state.antiguedad === 'number' && (
+          <p>
+            <span className="font-semibold text-slate-900">Antiguedad (años):</span> {state.antiguedad}
+          </p>
+        )}
+        {typeof state.expensas === 'number' && (
+          <p>
+            <span className="font-semibold text-slate-900">Expensas mensuales:</span> {state.expensas}
+          </p>
+        )}
         {typeof state.dormitorios === 'number' && (
           <p>
             <span className="font-semibold text-slate-900">Dormitorios:</span> {state.dormitorios}

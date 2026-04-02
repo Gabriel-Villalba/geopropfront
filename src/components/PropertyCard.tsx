@@ -19,10 +19,28 @@ const getImageUrl = (property: Property) =>
   property.image ||
   'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=900&q=80';
 
+const formatRelativeDate = (iso?: string | null) => {
+  if (!iso) return null;
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return null;
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  if (diffDays <= 0) return 'Publicado hoy';
+  if (diffDays === 1) return 'Publicado ayer';
+  if (diffDays < 30) return `Publicado hace ${diffDays} días`;
+  return `Publicado el ${date.toLocaleDateString('es-AR')}`;
+};
+
 export function PropertyCard({ property, onClick, index }: PropertyCardProps) {
   const imageUrl = getImageUrl(property);
   const publisherName = property.publisher?.name ?? 'Sin especificar';
   const isFeatured = property.listing?.isFeatured ?? false;
+  const publishedLabel = formatRelativeDate(property.publishedAt ?? property.createdAt ?? null);
+  const pricePerM2 =
+    property.price?.amount && property.specs?.totalArea
+      ? property.price.amount / property.specs.totalArea
+      : null;
 
   return (
     <motion.article
@@ -76,6 +94,12 @@ export function PropertyCard({ property, onClick, index }: PropertyCardProps) {
         <div className="font-display font-bold text-xl text-ink tracking-tight">
           {formatPrice(property.price?.amount, property.price?.currency)}
         </div>
+        {pricePerM2 && property.price?.currency && (
+          <div className="text-xs text-ink-muted">
+            {property.price.currency} {Math.round(pricePerM2).toLocaleString('es-AR')} / m²
+          </div>
+        )}
+        {publishedLabel && <div className="text-xs text-ink-faint">{publishedLabel}</div>}
 
         {/* Location */}
         <div className="flex items-center gap-1.5 text-sm text-ink-muted">

@@ -19,6 +19,14 @@ function supportsParking(propertyType?: CreatePublicationPropertyType): boolean 
   return propertyType === 'casa' || propertyType === 'departamento';
 }
 
+function supportsCoveredArea(propertyType?: CreatePublicationPropertyType): boolean {
+  return propertyType === 'casa' || propertyType === 'departamento' || propertyType === 'comercial' || propertyType === 'galpon-deposito';
+}
+
+function supportsRooms(propertyType?: CreatePublicationPropertyType): boolean {
+  return propertyType !== 'lote';
+}
+
 interface DetailsStepExtendedProps extends StepProps {
   cities: City[];
   isLoadingCities: boolean;
@@ -60,7 +68,7 @@ export function DetailsStep({
 
         {supportsBathrooms(state.propertyType) && (
           <label className="grid gap-1.5">
-            <span className="text-sm font-medium text-slate-700">Banos</span>
+            <span className="text-sm font-medium text-slate-700">Baños</span>
             <input
               type="number"
               min={0}
@@ -104,6 +112,20 @@ export function DetailsStep({
           />
         </label>
 
+        {supportsCoveredArea(state.propertyType) && (
+          <label className="grid gap-1.5">
+            <span className="text-sm font-medium text-slate-700">Metros cuadrados cubiertos</span>
+            <input
+              type="number"
+              min={0}
+              value={state.metrosCubiertos ?? ''}
+              onChange={(event) => updateField('metrosCubiertos', toNumberOrUndefined(event.target.value))}
+              className=" border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
+            />
+            <span className="text-xs text-slate-500">Se sugiere completar este campo.</span>
+          </label>
+        )}
+
         <label className="grid gap-1.5">
           <span className="text-sm font-medium text-slate-700">Precio</span>
           <input
@@ -114,6 +136,75 @@ export function DetailsStep({
             className=" border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
           />
         </label>
+
+        <label className="grid gap-1.5">
+          <span className="text-sm font-medium text-slate-700">Moneda</span>
+          <select
+            value={state.moneda}
+            onChange={(event) => updateField('moneda', event.target.value as 'USD' | 'ARS')}
+            className=" border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
+          >
+            <option value="USD">USD</option>
+            <option value="ARS">ARS</option>
+          </select>
+        </label>
+
+        <label className="grid gap-1.5">
+          <span className="text-sm font-medium text-slate-700">Estado del inmueble</span>
+          <select
+            value={state.estadoInmueble ?? ''}
+            onChange={(event) => {
+              if (!event.target.value) {
+                updateField('estadoInmueble', undefined);
+                return;
+              }
+              updateField('estadoInmueble', event.target.value as 'a_estrenar' | 'usado' | 'a_refaccionar');
+            }}
+            className=" border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
+          >
+            <option value="">Seleccionar</option>
+            <option value="a_estrenar">A estrenar</option>
+            <option value="usado">Usado</option>
+            <option value="a_refaccionar">A refaccionar</option>
+          </select>
+        </label>
+
+        {supportsRooms(state.propertyType) && (
+          <label className="grid gap-1.5">
+            <span className="text-sm font-medium text-slate-700">Ambientes</span>
+            <input
+              type="number"
+              min={0}
+              value={state.ambientes ?? ''}
+              onChange={(event) => updateField('ambientes', toNumberOrUndefined(event.target.value))}
+              className=" border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
+            />
+          </label>
+        )}
+
+        <label className="grid gap-1.5">
+          <span className="text-sm font-medium text-slate-700">Antiguedad (años)</span>
+          <input
+            type="number"
+            min={0}
+            value={state.antiguedad ?? ''}
+            onChange={(event) => updateField('antiguedad', toNumberOrUndefined(event.target.value))}
+            className=" border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
+          />
+        </label>
+
+        {state.operation === 'alquiler' && (
+          <label className="grid gap-1.5">
+            <span className="text-sm font-medium text-slate-700">Expensas mensuales</span>
+            <input
+              type="number"
+              min={0}
+              value={state.expensas ?? ''}
+              onChange={(event) => updateField('expensas', toNumberOrUndefined(event.target.value))}
+              className=" border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
+            />
+          </label>
+        )}
 
         <div className="grid gap-1.5">
           <span className="text-sm font-medium text-slate-700">Ciudad o localidad (Santa Fe)</span>

@@ -18,6 +18,10 @@ function toPreviews(files: File[]): ImagePreview[] {
 
 export function ImageUploadStep({ state, updateField }: StepProps) {
   const previews = useMemo(() => toPreviews(state.imagenes), [state.imagenes]);
+  const requiredCount = 3;
+  const currentCount = state.imagenes.length;
+  const progressCount = Math.min(currentCount, requiredCount);
+  const missingCount = Math.max(requiredCount - currentCount, 0);
 
   useEffect(() => {
     return () => {
@@ -40,7 +44,10 @@ export function ImageUploadStep({ state, updateField }: StepProps) {
     <section className="space-y-4">
       <div>
         <h2 className="text-lg font-semibold text-slate-900">Subir imagenes</h2>
-        <p className="text-sm text-slate-600">Paso opcional: puedes cargar imagenes para previsualizar antes de publicar.</p>
+        <p className="text-sm text-slate-600">Minimo {requiredCount} fotos para publicar. Progreso: {progressCount}/{requiredCount}.</p>
+        {missingCount > 0 && (
+          <p className="text-xs text-amber-700 mt-1">Faltan {missingCount} foto(s) para completar.</p>
+        )}
       </div>
 
       <label className="flex cursor-pointer items-center justify-center gap-2  border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm font-medium text-slate-700 transition hover:border-blue-400 hover:text-blue-700">

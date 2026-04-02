@@ -460,6 +460,14 @@ export const propertyApi = {
       api.patch<BackendApiResponse<{ id: string }>>(`/properties/${id}/approve`),
     );
   },
+  trackView: async (id: string): Promise<{ id: string; views: number }> => {
+    const response = await requestWithRetry(
+      () =>
+        api.post<BackendApiResponse<{ id: string; views: number }>>(`/properties/${id}/views`),
+      { retries: 0, include5xx: false },
+    );
+    return extractApiData(response);
+  },
   remove: async (id: string): Promise<void> => {
     await requestWithRetry(() => api.delete<BackendApiResponse<{ id: string }>>(`/properties/${id}`));
   },

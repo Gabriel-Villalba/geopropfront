@@ -8,10 +8,16 @@ const TOTAL_STEPS = 5;
 const initialState: CreatePublicationState = {
   operation: undefined,
   propertyType: undefined,
+  moneda: 'USD',
+  estadoInmueble: undefined,
+  antiguedad: undefined,
+  ambientes: undefined,
   dormitorios: undefined,
   banos: undefined,
   cochera: undefined,
   metrosCuadrados: undefined,
+  metrosCubiertos: undefined,
+  expensas: undefined,
   precio: null,
   descripcion: '',
   provinciaSlug: 'santa-fe',
@@ -46,14 +52,17 @@ function sanitizeDetailsByType(nextType: CreatePublicationPropertyType | undefin
 
   if (nextType === 'lote') {
     return {
+      ambientes: undefined,
       dormitorios: undefined,
       banos: undefined,
       cochera: undefined,
+      metrosCubiertos: undefined,
     };
   }
 
   if (nextType === 'comercial' || nextType === 'galpon-deposito') {
     return {
+      ambientes: undefined,
       dormitorios: undefined,
       cochera: undefined,
     };
@@ -64,6 +73,7 @@ function sanitizeDetailsByType(nextType: CreatePublicationPropertyType | undefin
     banos: undefined,
     cochera: undefined,
     metrosCuadrados: undefined,
+    metrosCubiertos: undefined,
   };
 }
 
@@ -76,7 +86,8 @@ function hasStepThreeRequiredFields(state: CreatePublicationState): boolean {
     state.descripcion.trim().length > 0 &&
     state.provinciaSlug.trim().length > 0 &&
     state.cityId.trim().length > 0 &&
-    state.ciudad.trim().length > 0;
+    state.ciudad.trim().length > 0 &&
+    Boolean(state.moneda);
 
   if (!commonOk || !state.propertyType) {
     return false;
@@ -153,9 +164,11 @@ export function useCreatePublication(options?: UseCreatePublicationOptions) {
     if (currentStep === 1) return Boolean(state.operation);
     if (currentStep === 2) return Boolean(state.propertyType);
     if (currentStep === 3) return hasStepThreeRequiredFields(state);
-    if (currentStep === 4) return true;
+    if (currentStep === 4) {
+      return mode === 'create' ? state.imagenes.length >= 3 : true;
+    }
     return true;
-  }, [currentStep, state]);
+  }, [currentStep, state, mode]);
 
   const nextStep = () => {
     setCurrentStep((prev) => (prev >= TOTAL_STEPS ? TOTAL_STEPS : prev + 1));
@@ -212,14 +225,19 @@ export function useCreatePublication(options?: UseCreatePublicationOptions) {
       title,
       description: state.descripcion.trim(),
       price: state.precio,
+      currency: state.moneda,
       area: state.metrosCuadrados,
+      coveredArea: state.metrosCubiertos,
+      rooms: state.ambientes ?? null,
       bedrooms: state.dormitorios ?? null,
       bathrooms: state.banos ?? null,
       parking: state.cochera === true ? 1 : 0,
+      ageYears: state.antiguedad ?? null,
+      condition: state.estadoInmueble ?? null,
+      expenses: state.expensas ?? null,
       ownerType: 'particular',
       contactName: normalizedOwner,
       contactPhone: normalizedPhone || undefined,
-      currency: 'USD',
       cityId: normalizedCityId,
       address: normalizedAddress || undefined,
       source: 'internal',

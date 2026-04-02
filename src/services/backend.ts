@@ -34,9 +34,15 @@ export interface BackendProperty {
   currency: string;
   bedrooms: number | null;
   bathrooms: number | null;
+  rooms?: number | null;
   area: number | null;
+  coveredArea?: number | null;
+  ageYears?: number | null;
   parking: number | null;
   address: string | null;
+  condition?: 'a_estrenar' | 'usado' | 'a_refaccionar' | null;
+  monthlyExpenses?: number | null;
+  views?: number | null;
   ownerType: 'particular' | 'inmobiliaria';
   contactName: string | null;
   contactPhone: string | null;
@@ -45,6 +51,7 @@ export interface BackendProperty {
   source: string;
   status: 'pending' | 'approved' | 'rejected';
   createdBy: string;
+  createdAt?: string | null;
   publishedAt: string | null;
   deactivatedAt: string | null;
   city?: BackendCity | null;
@@ -156,6 +163,11 @@ export function mapBackendPropertyToUi(property: BackendProperty): Property {
   const orderedImages = [...(property.images ?? [])].sort((a, b) => a.order - b.order);
   const imageUrls = orderedImages.map((image) => image.imageUrl).filter(Boolean);
   const primaryImage = orderedImages.find((image) => image.isPrimary)?.imageUrl ?? imageUrls[0] ?? null;
+  const specs = (property as unknown as { specs?: Record<string, unknown> }).specs ?? {};
+  const getSpecNumber = (key: string): number | null => {
+    const value = (specs as Record<string, unknown>)[key];
+    return typeof value === 'number' ? value : null;
+  };
 
   return {
     id: property.id,
@@ -176,9 +188,13 @@ export function mapBackendPropertyToUi(property: BackendProperty): Property {
     },
     specs: {
       totalArea: property.area ? Number(property.area) : null,
-      bedrooms: property.bedrooms,
-      bathrooms: property.bathrooms,
-      parking: property.parking ?? null,
+      coveredArea: property.coveredArea ? Number(property.coveredArea) : null,
+      rooms: property.rooms ?? getSpecNumber('rooms'),
+      bedrooms: property.bedrooms ?? getSpecNumber('bedrooms'),
+      bathrooms: property.bathrooms ?? getSpecNumber('bathrooms'),
+      parking: property.parking ?? getSpecNumber('parking'),
+      ageYears: property.ageYears ?? getSpecNumber('ageYears'),
+      expensesMonthly: property.monthlyExpenses ?? getSpecNumber('expensesMonthly'),
     },
     image: primaryImage,
     images: imageUrls,
@@ -198,5 +214,9 @@ export function mapBackendPropertyToUi(property: BackendProperty): Property {
           isActive: property.listing.isActive,
         }
       : undefined,
+    condition: property.condition ?? null,
+    createdAt: property.createdAt ?? null,
+    publishedAt: property.publishedAt ?? null,
+    views: property.views ?? null,
   };
 }

@@ -15,6 +15,61 @@ function statusBadge(status: string): string {
   return 'bg-rose-50 text-rose-700 border-rose-200';
 }
 
+function resolveImageUrl(rawUrl?: string | null): string | null {
+  if (!rawUrl || !rawUrl.trim()) return null;
+  if (/^https?:\/\//i.test(rawUrl)) return rawUrl;
+  if (rawUrl.startsWith('data:')) return rawUrl;
+
+  const apiBase = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
+  const base = apiBase.replace(/\/api\/?$/i, '');
+  if (rawUrl.startsWith('/')) return `${base}${rawUrl}`;
+  return `${base}/${rawUrl}`;
+}
+
+type PanelImageItem = {
+  id?: string;
+  imageUrl?: string | null;
+  order?: number;
+  isPrimary?: boolean;
+};
+
+function normalizePanelImages(images: unknown): Array<PanelImageItem & { canDelete: boolean }> {
+  if (!Array.isArray(images)) return [];
+
+  return images
+    .map((item, index) => {
+      if (typeof item === 'string') {
+        return {
+          id: `image-${index}`,
+          imageUrl: item,
+          order: index,
+          isPrimary: index === 0,
+          canDelete: false,
+        };
+      }
+
+      if (item && typeof item === 'object') {
+        const image = item as PanelImageItem;
+        return {
+          id: image.id,
+          imageUrl: image.imageUrl ?? null,
+          order: typeof image.order === 'number' ? image.order : index,
+          isPrimary: Boolean(image.isPrimary),
+          canDelete: Boolean(image.id),
+        };
+      }
+
+      return {
+        id: `image-${index}`,
+        imageUrl: null,
+        order: index,
+        isPrimary: false,
+        canDelete: false,
+      };
+    })
+    .filter((image) => Boolean(image.imageUrl));
+}
+
 export default function MyPropertiesPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -287,27 +342,41 @@ export default function MyPropertiesPage() {
                   </div>
 
                   <div className="mt-4">
-                    {entry.images && entry.images.length > 0 ? (
+                    {normalizePanelImages(entry.images).length > 0 ? (
                       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                        {entry.images
+                        {normalizePanelImages(entry.images)
                           .slice()
-                          .sort((a, b) => a.order - b.order)
-                          .map((image) => (
-                            <article key={image.id} className="rounded-lg border border-slate-200 bg-slate-50 p-2">
-                              <img
-                                src={image.imageUrl}
-                                alt={`Imagen de ${entry.title}`}
-                                className="h-24 w-full rounded-md object-cover"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => void deletePropertyImage(entry.id, image.id)}
-                                className="mt-2 w-full rounded-md border border-rose-300 px-2 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-50"
-                              >
-                                Eliminar imagen
-                              </button>
-                            </article>
-                          ))}
+                          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+                          .map((image) => {
+                            const resolvedImageUrl = resolveImageUrl(image.imageUrl);
+
+                            return (
+                              <article key={image.id} className="rounded-lg border border-slate-200 bg-slate-50 p-2">
+                                {resolvedImageUrl ? (
+                                  <img
+                                    src={resolvedImageUrl}
+                                    alt={`Imagen de ${entry.title}`}
+                                    className="h-24 w-full rounded-md object-cover"
+                                  />
+                                ) : (
+                                  <div className="flex h-24 w-full items-center justify-center rounded-md border border-dashed border-slate-300 bg-white text-xs text-slate-500">
+                                    Imagen no disponible
+                                  </div>
+                                )}
+                                {image.canDelete && image.id ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => void deletePropertyImage(entry.id, image.id)}
+                                    className="mt-2 w-full rounded-md border border-rose-300 px-2 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-50"
+                                  >
+                                    Eliminar imagen
+                                  </button>
+                                ) : (
+                                  <p className="mt-2 text-center text-[11px] text-slate-500">Imagen cargada</p>
+                                )}
+                              </article>
+                            );
+                          })}
                       </div>
                     ) : (
                       <p className="text-xs text-slate-500">Sin imagenes cargadas.</p>

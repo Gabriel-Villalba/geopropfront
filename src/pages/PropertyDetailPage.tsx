@@ -1,12 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   Bath, BedDouble, CalendarClock, CarFront, ChevronLeft, ChevronRight,
   Home, LandPlot, LayoutGrid, MapPin, Maximize2, MessageCircle,
-  ArrowLeft, Send, User, Mail, ChevronDown, ChevronUp,
+  ArrowLeft, Send, User, Mail, ChevronDown, ChevronUp, BadgeCheck, Eye, Wallet,
 } from 'lucide-react';
 import { Navbar } from '../components';
-import { inquiryApi } from '../services/api';
+import { inquiryApi, propertyApi } from '../services/api';
 import { getApiErrorMessage } from '../services/backend';
 import type { Property } from '../types';
 
@@ -26,6 +26,22 @@ const formatArea = (value?: number | null) => {
 const formatCount = (value: number | null | undefined, singular: string, plural: string) => {
   if (value == null) return null;
   return `${value} ${value === 1 ? singular : plural}`;
+};
+const formatRelativeDate = (iso?: string | null) => {
+  if (!iso) return null;
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return null;
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  if (diffDays <= 0) return 'Publicado hoy';
+  if (diffDays === 1) return 'Publicado ayer';
+  if (diffDays < 30) return `Publicado hace ${diffDays} días`;
+  return `Publicado el ${date.toLocaleDateString('es-AR')}`;
+};
+const formatMoney = (value?: number | null, currency?: string | null) => {
+  if (value == null || !currency) return null;
+  return `${currency} ${value.toLocaleString('es-AR')}`;
 };
 
 /* ── contact form state ── */
@@ -81,6 +97,8 @@ export default function PropertyDetailPage() {
   const [sent, setSent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [views, setViews] = useState<number | null>(property.views ?? null);
+  const hasTrackedView = useRef(false);
 
   const goPrev = () => setCurrentIndex((p) => (p === 0 ? images.length - 1 : p - 1));
   const goNext = () => setCurrentIndex((p) => (p === images.length - 1 ? 0 : p + 1));
@@ -104,12 +122,39 @@ export default function PropertyDetailPage() {
     { label: 'cochera',      value: formatCount(property.specs?.parking, 'cochera', 'cocheras'), icon: CarFront },
     { label: 'dormitorios',  value: formatCount(property.specs?.bedrooms, 'dormitorio', 'dormitorios'), icon: BedDouble },
     { label: 'antigüedad',   value: formatCount(property.specs?.ageYears, 'año', 'años'),        icon: CalendarClock },
+    { label: 'estado',       value: property.condition === 'a_estrenar' ? 'A estrenar' : property.condition === 'usado' ? 'Usado' : property.condition === 'a_refaccionar' ? 'A refaccionar' : null, icon: BadgeCheck },
+    { label: 'expensas',     value: formatMoney(property.specs?.expensesMonthly, property.price?.currency), icon: Wallet },
   ].filter((s) => Boolean(s.value));
 
   /* fake submit — reemplazá con tu lógica */
   const locationLabel = property.subtitle
     ? property.subtitle
     : [property.location?.locality, property.location?.city].filter(Boolean).join(', ');
+
+  useEffect(() => {
+    if (!property?.id) return;
+    if (hasTrackedView.current) return;
+
+    const storageKey = `geoprop:viewed:${property.id}`;
+    if (sessionStorage.getItem(storageKey)) {
+      return;
+    }
+
+    hasTrackedView.current = true;
+    let cancelled = false;
+    propertyApi
+      .trackView(String(property.id))
+      .then((result) => {
+        if (!cancelled && typeof result.views === 'number') {
+          setViews(result.views);
+        }
+      })
+      .catch(() => null);
+    sessionStorage.setItem(storageKey, '1');
+    return () => {
+      cancelled = true;
+    };
+  }, [property?.id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -292,6 +337,24 @@ export default function PropertyDetailPage() {
                 <p className="font-display font-bold text-3xl text-ink tracking-tight">
                   {formatPrice(property.price?.amount, property.price?.currency)}
                 </p>
+                {property.price?.amount && property.specs?.totalArea && property.price?.currency && (
+                  <p className="text-xs text-ink-muted mt-1">
+                    {property.price.currency} {Math.round(property.price.amount / property.specs.totalArea).toLocaleString('es-AR')} / m²
+                  </p>
+                )}
+
+                {formatRelativeDate(property.publishedAt ?? property.createdAt ?? null) && (
+                  <p className="text-xs text-ink-faint mt-2">
+                    {formatRelativeDate(property.publishedAt ?? property.createdAt ?? null)}
+                  </p>
+                )}
+
+                {typeof views === 'number' && (
+                  <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-surface-muted px-3 py-1 text-xs text-ink-muted">
+                    <Eye className="h-3.5 w-3.5" />
+                    {views} vistas
+                  </div>
+                )}
 
                 <div className="mt-5 pt-5 border-t border-gray-100">
                   <p className="text-xs text-ink-muted mb-1">Publicado por</p>
