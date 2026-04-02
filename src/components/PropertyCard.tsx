@@ -19,6 +19,15 @@ const getImageUrl = (property: Property) =>
   property.image ||
   'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=900&q=80';
 
+const shouldShowCoveredPrice = (type?: Property['type'] | null) =>
+  type === 'casa' || type === 'comercial' || type === 'galpon-deposito';
+
+const formatPricePerM2 = (amount?: number | null, area?: number | null, currency?: string | null) => {
+  if (!amount || !area || !currency) return null;
+  if (area <= 0) return null;
+  return `${currency} ${Math.round(amount / area).toLocaleString('es-AR')}`;
+};
+
 const formatRelativeDate = (iso?: string | null) => {
   if (!iso) return null;
   const date = new Date(iso);
@@ -37,10 +46,15 @@ export function PropertyCard({ property, onClick, index }: PropertyCardProps) {
   const publisherName = property.publisher?.name ?? 'Sin especificar';
   const isFeatured = property.listing?.isFeatured ?? false;
   const publishedLabel = formatRelativeDate(property.publishedAt ?? property.createdAt ?? null);
-  const pricePerM2 =
-    property.price?.amount && property.specs?.totalArea
-      ? property.price.amount / property.specs.totalArea
-      : null;
+  const pricePerM2Total = formatPricePerM2(
+    property.price?.amount,
+    property.specs?.totalArea,
+    property.price?.currency,
+  );
+  const showCovered = shouldShowCoveredPrice(property.type);
+  const pricePerM2Covered = showCovered
+    ? formatPricePerM2(property.price?.amount, property.specs?.coveredArea, property.price?.currency)
+    : null;
 
   return (
     <motion.article
@@ -94,9 +108,14 @@ export function PropertyCard({ property, onClick, index }: PropertyCardProps) {
         <div className="font-display font-bold text-xl text-ink tracking-tight">
           {formatPrice(property.price?.amount, property.price?.currency)}
         </div>
-        {pricePerM2 && property.price?.currency && (
+        {pricePerM2Total && (
           <div className="text-xs text-ink-muted">
-            {property.price.currency} {Math.round(pricePerM2).toLocaleString('es-AR')} / m²
+            {pricePerM2Total} / m² total
+          </div>
+        )}
+        {pricePerM2Covered && (
+          <div className="text-xs text-ink-muted">
+            {pricePerM2Covered} / m² cubierto
           </div>
         )}
         {publishedLabel && <div className="text-xs text-ink-faint">{publishedLabel}</div>}

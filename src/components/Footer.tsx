@@ -1,4 +1,5 @@
 import { Mail, MapPin, ArrowUpRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export function Footer() {
   return (
@@ -31,6 +32,10 @@ export function Footer() {
               <MapPin className="w-4 h-4 text-brand-400" />
               Rafaela, Santa Fe
             </div>
+            <Link to="/ayuda" className="flex items-center gap-2 hover:text-white transition-colors">
+              Ayuda / FAQ
+              <ArrowUpRight className="w-3 h-3" />
+            </Link>
           </div>
         </div>
 

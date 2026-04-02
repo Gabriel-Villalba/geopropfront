@@ -122,7 +122,9 @@ export function DetailsStep({
               onChange={(event) => updateField('metrosCubiertos', toNumberOrUndefined(event.target.value))}
               className=" border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
             />
-            <span className="text-xs text-slate-500">Se sugiere completar este campo.</span>
+            <span className="text-xs text-slate-500">
+              Sumá los m² de todos los niveles techados (PB + PA, etc.).
+            </span>
           </label>
         )}
 

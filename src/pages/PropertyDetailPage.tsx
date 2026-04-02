@@ -43,6 +43,13 @@ const formatMoney = (value?: number | null, currency?: string | null) => {
   if (value == null || !currency) return null;
   return `${currency} ${value.toLocaleString('es-AR')}`;
 };
+const shouldShowCoveredPrice = (type?: Property['type'] | null) =>
+  type === 'casa' || type === 'comercial' || type === 'galpon-deposito';
+const formatPricePerM2 = (amount?: number | null, area?: number | null, currency?: string | null) => {
+  if (!amount || !area || !currency) return null;
+  if (area <= 0) return null;
+  return `${currency} ${Math.round(amount / area).toLocaleString('es-AR')}`;
+};
 
 /* ── contact form state ── */
 interface ContactForm {
@@ -337,11 +344,17 @@ export default function PropertyDetailPage() {
                 <p className="font-display font-bold text-3xl text-ink tracking-tight">
                   {formatPrice(property.price?.amount, property.price?.currency)}
                 </p>
-                {property.price?.amount && property.specs?.totalArea && property.price?.currency && (
+                {formatPricePerM2(property.price?.amount, property.specs?.totalArea, property.price?.currency) && (
                   <p className="text-xs text-ink-muted mt-1">
-                    {property.price.currency} {Math.round(property.price.amount / property.specs.totalArea).toLocaleString('es-AR')} / m²
+                    {formatPricePerM2(property.price?.amount, property.specs?.totalArea, property.price?.currency)} / m² total
                   </p>
                 )}
+                {shouldShowCoveredPrice(property.type) &&
+                  formatPricePerM2(property.price?.amount, property.specs?.coveredArea, property.price?.currency) && (
+                    <p className="text-xs text-ink-muted">
+                      {formatPricePerM2(property.price?.amount, property.specs?.coveredArea, property.price?.currency)} / m² cubierto
+                    </p>
+                  )}
 
                 {formatRelativeDate(property.publishedAt ?? property.createdAt ?? null) && (
                   <p className="text-xs text-ink-faint mt-2">

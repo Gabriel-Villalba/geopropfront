@@ -19,6 +19,7 @@ const EditPropertyRoute = lazy(() => import('./pages/panel/properties/edit'));
 const CreateAlertPage = lazy(() => import('./pages/panel/alerts/CreateAlertPage'));
 const CustomCursor = lazy(() => import('./components/CustomCursor'));
 const PropertyDetailPage = lazy(() => import('./pages/PropertyDetailPage'));
+const HelpPage = lazy(() => import('./pages/Help'));
 const InquiriesPage = lazy(() => import('./pages/panel/inquiries/InquiriesPage'));
 const NotificationsPage = lazy(() => import('./pages/panel/notifications/NotificationsPage'));
 
@@ -58,6 +59,7 @@ function App() {
                 <Route path="/panel/properties/create" element={<ProtectedRoute><CreatePropertyRoute /></ProtectedRoute>} />
                 <Route path="/panel/properties/:id/edit" element={<ProtectedRoute><EditPropertyRoute /></ProtectedRoute>} />
                 <Route path="/panel/alerts" element={<ProtectedRoute><CreateAlertPage /></ProtectedRoute>} />
+                <Route path="/ayuda" element={<HelpPage />} />
                 <Route path="/" element={<HomeRedirect />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
