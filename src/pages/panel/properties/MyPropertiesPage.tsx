@@ -1,11 +1,14 @@
-import { ArrowLeft, Heart, MessageCircle, Plus } from 'lucide-react';
+import { ArrowLeft, Heart, MessageCircle, Plus, TrendingUp } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Navbar } from '../../../components';
+import { PropertyComparator, ZonePriceStats } from '../../../components';
 import { useAuth } from '../../../contexts/AuthContext';
 import { ExpiringPropertiesAlert, RenewListingModal } from '../../../features/listings';
 import { useFavorites } from '../../../hooks/useFavorites';
 import { useOwnerPanel } from '../../../hooks/useOwnerPanel';
+import { meApi } from '../../../services/api';
+import type { PropertyPerformanceMetric, ZonePriceStat } from '../../../types';
 import type { RenewListingPayload } from '../../../types';
 
 function statusBadge(status: string): string {
@@ -80,6 +83,10 @@ export default function MyPropertiesPage() {
   const [renewModalDuration, setRenewModalDuration] = useState<15 | 30 | 60>(30);
   const [integrationMessage, setIntegrationMessage] = useState<string | null>(null);
   const { isFavorite } = useFavorites();
+  const [metrics, setMetrics] = useState<Record<string, PropertyPerformanceMetric>>({});
+  const [selectedCompare, setSelectedCompare] = useState<string[]>([]);
+  const [showComparator, setShowComparator] = useState(false);
+  const [zoneStats, setZoneStats] = useState<ZonePriceStat[]>([]);
   const {
     profile,
     myProperties,
@@ -101,6 +108,32 @@ export default function MyPropertiesPage() {
     void loadPanel();
   }, [loadPanel]);
 
+  useEffect(() => {
+    let active = true;
+    meApi
+      .getPropertyPerformance()
+      .then((data) => {
+        if (!active) return;
+        const map: Record<string, PropertyPerformanceMetric> = {};
+        data.forEach((item) => {
+          map[item.id] = item;
+        });
+        setMetrics(map);
+      })
+      .catch(() => null);
+
+    meApi
+      .getZonePriceStats()
+      .then((data) => {
+        if (active) setZoneStats(data);
+      })
+      .catch(() => null);
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const isAdmin = useMemo(() => {
     const role = (profile?.role ?? user?.role ?? '').toLowerCase();
     return role === 'admin';
@@ -111,6 +144,31 @@ export default function MyPropertiesPage() {
   }, [profile?.plan, user?.plan]);
 
   const hasBulkIntegrations = plan === 'INMOBILIARIA' || plan === 'BROKER';
+  const hasZoneStats = plan === 'INMOBILIARIA' || plan === 'BROKER';
+
+  const toggleCompare = (propertyId: string) => {
+    setSelectedCompare((prev) => {
+      if (prev.includes(propertyId)) {
+        return prev.filter((id) => id !== propertyId);
+      }
+      if (prev.length >= 3) return prev;
+      return [...prev, propertyId];
+    });
+  };
+
+  const compareItems = selectedCompare
+    .map((id) => metrics[id])
+    .filter((item): item is PropertyPerformanceMetric => Boolean(item));
+
+  const formatMoney = (value?: number | null, currency?: string | null) => {
+    if (value == null || !currency) return '-';
+    return `${currency} ${Number(value).toLocaleString('es-AR')}`;
+  };
+
+  const pricePerM2 = (price?: number, area?: number | null) => {
+    if (!price || !area || area <= 0) return null;
+    return Math.round(price / area);
+  };
 
   const openRenewModal = (
     property: { id: string; title: string; listing?: { listingType?: 'normal' | 'featured'; listingDuration?: 15 | 30 | 60 } },
@@ -258,6 +316,17 @@ export default function MyPropertiesPage() {
                           Favorito
                         </span>
                       )}
+                      <button
+                        type="button"
+                        onClick={() => toggleCompare(entry.id)}
+                        className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold transition ${
+                          selectedCompare.includes(entry.id)
+                            ? 'border-brand-200 bg-brand-50 text-brand-700'
+                            : 'border-slate-200 bg-slate-100 text-slate-600'
+                        }`}
+                      >
+                        Comparar
+                      </button>
                       <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${statusBadge(entry.listing?.status ?? entry.status)}`}>
                         {entry.listing?.status ?? entry.status}
                       </span>
@@ -286,6 +355,35 @@ export default function MyPropertiesPage() {
                     <p className="mt-2 text-xs text-slate-600">
                       Vence: {new Date(entry.listing.listingExpiresAt).toLocaleDateString('es-AR')}
                     </p>
+                  )}
+
+                  {metrics[entry.id] && (
+                    <div className="mt-3 grid gap-2 sm:grid-cols-4 text-xs text-slate-600">
+                      <div className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2">
+                        <p className="text-[11px] text-slate-500">Vistas</p>
+                        <p className="text-sm font-semibold text-slate-900">{metrics[entry.id].views}</p>
+                      </div>
+                      <div className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2">
+                        <p className="text-[11px] text-slate-500">Consultas</p>
+                        <p className="text-sm font-semibold text-slate-900">{metrics[entry.id].inquiriesTotal}</p>
+                      </div>
+                      <div className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2">
+                        <p className="text-[11px] text-slate-500">ConversiÃ³n</p>
+                        <p className="text-sm font-semibold text-slate-900">
+                          {(metrics[entry.id].conversion * 100).toFixed(1)}%
+                        </p>
+                      </div>
+                      <div className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 flex items-center justify-between">
+                        <div>
+                          <p className="text-[11px] text-slate-500">Semana vs anterior</p>
+                          <p className="text-sm font-semibold text-slate-900">
+                            {metrics[entry.id].changePercent >= 0 ? '+' : ''}
+                            {metrics[entry.id].changePercent}%
+                          </p>
+                        </div>
+                        <TrendingUp className={`h-4 w-4 ${metrics[entry.id].changePercent >= 0 ? 'text-emerald-500' : 'text-rose-500'}`} />
+                      </div>
+                    </div>
                   )}
 
                   <div className="mt-4 flex flex-wrap gap-2">
@@ -395,6 +493,96 @@ export default function MyPropertiesPage() {
             </div>
           )}
         </section>
+
+        {compareItems.length >= 2 && (
+          <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h2 className="text-sm font-semibold text-slate-900">Comparador de propiedades</h2>
+            <p className="text-xs text-slate-600 mb-4">SeleccionÃ¡ hasta 3 propiedades para comparar.</p>
+            <div className="overflow-x-auto">
+              <table className="min-w-[700px] w-full text-xs">
+                <thead>
+                  <tr className="text-left text-slate-500">
+                    <th className="py-2">Campo</th>
+                    {compareItems.map((item) => (
+                      <th key={item.id} className="py-2">{item.title}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="text-slate-700">
+                  <tr className="border-t">
+                    <td className="py-2">Precio</td>
+                    {compareItems.map((item) => (
+                      <td key={item.id} className="py-2">{formatMoney(item.price, item.currency)}</td>
+                    ))}
+                  </tr>
+                  <tr className="border-t">
+                    <td className="py-2">mÂ² total</td>
+                    {compareItems.map((item) => (
+                      <td key={item.id} className="py-2">{item.totalArea ?? '-'}</td>
+                    ))}
+                  </tr>
+                  <tr className="border-t">
+                    <td className="py-2">mÂ² cubierto</td>
+                    {compareItems.map((item) => (
+                      <td key={item.id} className="py-2">{item.coveredArea ?? '-'}</td>
+                    ))}
+                  </tr>
+                  <tr className="border-t">
+                    <td className="py-2">Precio / mÂ²</td>
+                    {compareItems.map((item) => (
+                      <td key={item.id} className="py-2">
+                        {pricePerM2(item.price, item.totalArea)
+                          ? `${item.currency} ${pricePerM2(item.price, item.totalArea)?.toLocaleString('es-AR')}`
+                          : '-'}
+                      </td>
+                    ))}
+                  </tr>
+                  <tr className="border-t">
+                    <td className="py-2">UbicaciÃ³n</td>
+                    {compareItems.map((item) => (
+                      <td key={item.id} className="py-2">{item.location ?? '-'}</td>
+                    ))}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
+
+        {hasZoneStats && zoneStats.length > 0 && (
+          <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h2 className="text-sm font-semibold text-slate-900">Precio promedio por zona</h2>
+            <p className="text-xs text-slate-600 mb-4">Rango actual estimado (no histÃ³rico).</p>
+            <div className="overflow-x-auto">
+              <table className="min-w-[600px] w-full text-xs">
+                <thead>
+                  <tr className="text-left text-slate-500">
+                    <th className="py-2">Ciudad</th>
+                    <th className="py-2">Promedio / mÂ²</th>
+                    <th className="py-2">MÃ­nimo</th>
+                    <th className="py-2">MÃ¡ximo</th>
+                  </tr>
+                </thead>
+                <tbody className="text-slate-700">
+                  {zoneStats.map((stat) => (
+                    <tr key={stat.cityId} className="border-t">
+                      <td className="py-2">{stat.cityName}</td>
+                      <td className="py-2">
+                        {stat.avgPricePerM2 ? `USD ${Math.round(stat.avgPricePerM2).toLocaleString('es-AR')}` : '-'}
+                      </td>
+                      <td className="py-2">
+                        {stat.minPricePerM2 ? `USD ${Math.round(stat.minPricePerM2).toLocaleString('es-AR')}` : '-'}
+                      </td>
+                      <td className="py-2">
+                        {stat.maxPricePerM2 ? `USD ${Math.round(stat.maxPricePerM2).toLocaleString('es-AR')}` : '-'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
       </main>
 
       <RenewListingModal
@@ -411,6 +599,13 @@ export default function MyPropertiesPage() {
         onClose={closeRenewModal}
         onConfirm={handleConfirmRenew}
       />
+
+      {showComparator && (
+        <PropertyComparator
+          propertyIds={selectedCompare}
+          onClose={() => setShowComparator(false)}
+        />
+      )}
     </div>
   );
 }

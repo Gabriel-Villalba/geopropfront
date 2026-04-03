@@ -4,6 +4,7 @@ import type {
   City,
   CreatePaymentPreferencePayload,
   CreateInquiryPayload,
+  DashboardSummary,
   ExpiringProperty,
   InquiryListParams,
   LoginCredentials,
@@ -12,6 +13,7 @@ import type {
   Property,
   PropertyFilters,
   PropertyInquiry,
+  PropertyPerformanceMetric,
   Province,
   RegisterCredentials,
   RenewListingPayload,
@@ -20,6 +22,7 @@ import type {
   UpdateUserPayload,
   UserPlan,
   UserRecord,
+  ZonePriceStat,
   ApiResponse,
 } from '../types';
 import {
@@ -322,6 +325,24 @@ export const meApi = {
     );
     return extractApiData(response);
   },
+  getDashboardSummary: async (): Promise<DashboardSummary> => {
+    const response = await requestWithRetry(() =>
+      api.get<BackendApiResponse<DashboardSummary>>('/me/dashboard-summary'),
+    );
+    return extractApiData(response);
+  },
+  getPropertyPerformance: async (): Promise<PropertyPerformanceMetric[]> => {
+    const response = await requestWithRetry(() =>
+      api.get<BackendApiResponse<PropertyPerformanceMetric[]>>('/me/properties/metrics'),
+    );
+    return extractApiData(response);
+  },
+  getZonePriceStats: async (): Promise<ZonePriceStat[]> => {
+    const response = await requestWithRetry(() =>
+      api.get<BackendApiResponse<ZonePriceStat[]>>('/me/zone-stats'),
+    );
+    return extractApiData(response);
+  },
 };
 
 export const userApi = {
@@ -589,6 +610,5 @@ export const locationApi = {
     return extractCollection<City>(response.data);
   },
 };
-
 
 export default api;

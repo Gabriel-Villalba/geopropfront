@@ -4,13 +4,15 @@ import { Filters, Navbar, Pagination, PropertyCard } from '../components';
 import { useFilters } from '../hooks/useFilters';
 import { usePagination } from '../hooks/usePagination';
 import { useProperties } from '../hooks/useProperties';
-import { PackageOpen, Search, TrendingUp } from 'lucide-react';
+import { Heart, PackageOpen, Search, TrendingUp } from 'lucide-react';
 import { PublishPropertyCTA } from '../components/PublishPropertyCTA';
+import { useFavorites } from '../hooks/useFavorites';
 
 export function Dashboard() {
   const { filters, params, updateFilter, resetFilters } = useFilters();
   const { properties, isLoading, isRetrying, error, hasFetched, fetchProperties } = useProperties();
   const { visibleItems, currentPage, totalPages, totalCount, goToPage } = usePagination(properties, 6);
+  const { favorites } = useFavorites();
   const navigate = useNavigate();
   const initialParamsRef = useRef(params);
 
@@ -78,7 +80,17 @@ export function Dashboard() {
                   <h2 className="font-display font-semibold text-lg text-ink">
                     {totalCount} resultado{totalCount !== 1 ? 's' : ''}
                   </h2>
-                  <p className="text-sm text-ink-muted">Mostrando {visibleItems.length}</p>
+                  <div className="flex items-center gap-3 text-sm text-ink-muted">
+                    <button
+                      type="button"
+                      onClick={() => navigate('/favoritos')}
+                      className="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-100 transition"
+                    >
+                      <Heart className="h-3.5 w-3.5" />
+                      {favorites.length} favorito{favorites.length !== 1 ? 's' : ''}
+                    </button>
+                    <span>Mostrando {visibleItems.length}</span>
+                  </div>
                 </div>
 
                 <div key={currentPage} className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

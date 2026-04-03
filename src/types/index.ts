@@ -70,6 +70,24 @@ export interface Property {
   views?: number | null;
 }
 
+export interface PropertyComparison {
+  id: string | number;
+  title: string;
+  city?: string | null;
+  province?: string | null;
+  price: number;
+  currency: string;
+  area?: number | null;
+  pricePerSqm?: number | null;
+  bedrooms?: number | null;
+  bathrooms?: number | null;
+  garages?: number | null;
+  operation: 'sale' | 'rent';
+  propertyType: string;
+  views?: number | null;
+  inquiriesCount?: number;
+}
+
 export interface PropertyFilters {
   city?: string;
  operation?: 'venta' | 'alquiler' | null;
@@ -208,6 +226,44 @@ export interface PaginatedResponse<T> {
   data: T;
   pagination: PaginationMeta;
   error: string | null;
+}
+
+export interface DashboardSummary {
+  activeProperties: number;
+  inquiriesThisWeek: number;
+  expiringSoon: number;
+}
+
+export interface PropertyPerformanceMetric {
+  id: string;
+  title: string;
+  location: string | null;
+  views: number;
+  inquiriesTotal: number;
+  conversion: number;
+  inquiriesCurrent: number;
+  inquiriesPrevious: number;
+  changePercent: number;
+  price: number;
+  currency: string;
+  totalArea: number | null;
+  coveredArea: number | null;
+}
+
+export interface ZonePriceStat {
+  cityId: string;
+  cityName: string;
+  avgPricePerM2: number | null;
+  minPricePerM2: number | null;
+  maxPricePerM2: number | null;
+  currency: string | null;
+  userProperties: UserProperty[] | null;
+}
+
+export interface UserProperty {
+  id: string;
+  title: string;
+  pricePerSqm: number;
 }
 
 export interface InquiryPropertySummary {
