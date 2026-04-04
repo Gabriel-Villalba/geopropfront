@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import axios from 'axios';
 import { alertApi, clientApi, meApi, propertyApi, userApi } from '../services/api';
 import type { BackendAlert, BackendMe, BackendProperty } from '../services/backend';
 import { getApiErrorMessage } from '../services/backend';
@@ -86,6 +87,15 @@ export function useOwnerPanel() {
         if (payload.password) {
           userPayload.password = payload.password;
         }
+        if (payload.plan !== undefined) {
+          userPayload.plan = payload.plan;
+        }
+        if (payload.planExpiresAt !== undefined) {
+          userPayload.planExpiresAt = payload.planExpiresAt;
+        }
+        if (payload.subscriptionStatus !== undefined) {
+          userPayload.subscriptionStatus = payload.subscriptionStatus;
+        }
 
         await userApi.update(profile.id, userPayload);
 
@@ -96,11 +106,17 @@ export function useOwnerPanel() {
             payload.subscriptionStatus !== profile.subscriptionStatus);
 
         if (shouldUpdatePlan) {
-          await clientApi.updateMe({
-            plan: payload.plan,
-            planExpiresAt: payload.planExpiresAt ?? null,
-            subscriptionStatus: payload.subscriptionStatus ?? null,
-          });
+          try {
+            await clientApi.updateMe({
+              plan: payload.plan,
+              planExpiresAt: payload.planExpiresAt ?? null,
+              subscriptionStatus: payload.subscriptionStatus ?? null,
+            });
+          } catch (error) {
+            if (!(axios.isAxiosError(error) && error.response?.status === 403)) {
+              throw error;
+            }
+          }
         }
 
         const me = await meApi.getMe();

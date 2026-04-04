@@ -239,6 +239,8 @@ export interface PropertyPerformanceMetric {
   title: string;
   location: string | null;
   views: number;
+  viewsCurrent: number;
+  viewsPrevious: number;
   inquiriesTotal: number;
   conversion: number;
   inquiriesCurrent: number;

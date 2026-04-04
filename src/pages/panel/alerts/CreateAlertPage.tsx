@@ -2,7 +2,7 @@ import { ArrowLeft, Bell, BellOff } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Navbar } from '../../../components';
+import { CitySelectField, Navbar } from '../../../components';
 import { useOwnerPanel } from '../../../hooks/useOwnerPanel';
 import { useSantaFeCities } from '../../../hooks/useSantaFeCities';
 
@@ -62,41 +62,22 @@ export default function CreateAlertPage() {
             message.type === 'success' ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-red-50 border-red-100 text-red-700'
           }`}>{message.text}</div>
         )}
-
         {/* Create form */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-6 mb-8">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-ink-muted mb-5">Nueva alerta</h2>
           <form className="grid gap-4 sm:grid-cols-2" onSubmit={handleSubmit}>
             <div className="sm:col-span-2">
-              <label className="text-xs font-medium text-ink-muted mb-1.5 block">Ciudad o localidad (Santa Fe)</label>
-              <select
-                required
+              <CitySelectField
+                label="Ciudad o localidad (Santa Fe)"
                 value={draft.cityId}
-                onChange={(e) => set('cityId', e.target.value)}
-                disabled={isLoadingCities || Boolean(citiesError)}
-                className="select-base w-full disabled:cursor-not-allowed disabled:bg-gray-50"
-              >
-                <option value="">
-                  {isLoadingCities ? 'Cargando ciudades...' : 'Seleccionar ciudad o localidad'}
-                </option>
-                {cities.map((city) => (
-                  <option key={city.id} value={city.id}>
-                    {city.name}
-                  </option>
-                ))}
-              </select>
-              {citiesError && (
-                <div className="mt-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
-                  <p>{citiesError}</p>
-                  <button
-                    type="button"
-                    onClick={() => void reloadCities()}
-                    className="mt-2 rounded-md border border-rose-300 px-2 py-1 font-semibold transition hover:bg-rose-100"
-                  >
-                    Reintentar ciudades
-                  </button>
-                </div>
-              )}
+                cities={cities}
+                isLoading={isLoadingCities}
+                error={citiesError}
+                onRetry={() => void reloadCities()}
+                selectClassName="select-base w-full"
+                labelClassName="text-xs font-medium text-ink-muted mb-1.5 block"
+                onChange={(value) => set('cityId', value)}
+              />
             </div>
 
             <div>

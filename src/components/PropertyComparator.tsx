@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+import { X, MapPin, BedDouble, Bath, CarFront, Maximize2, DollarSign, Eye, MessageCircle, ArrowUpRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { meApi } from '../services/api';
 import type { PropertyComparison } from '../types';
@@ -15,10 +15,8 @@ export default function PropertyComparator({ propertyIds, onClose }: PropertyCom
 
   useEffect(() => {
     if (propertyIds.length === 0) return;
-
     setLoading(true);
     setError(null);
-
     meApi
       .getMyProperties()
       .then((data) => {
@@ -44,199 +42,130 @@ export default function PropertyComparator({ propertyIds, onClose }: PropertyCom
             views: property.views ?? 0,
             inquiriesCount: 0,
           }));
-
         setComparisons(selected);
       })
       .catch((err) => {
         setError(err instanceof Error ? err.message : 'Error al comparar propiedades');
       })
-      .finally(() => {
-        setLoading(false);
-      });
+      .finally(() => setLoading(false));
   }, [propertyIds]);
 
   const formatCurrency = (amount?: number | null, currency?: string | null) => {
-    if (amount == null || !currency) return '-';
+    if (amount == null || !currency) return '—';
     return `${currency} ${amount.toLocaleString('es-AR')}`;
   };
-
   const formatArea = (area?: number | null) => {
-    if (area == null) return '-';
+    if (area == null) return '—';
     return `${area.toLocaleString('es-AR')} m²`;
   };
+  const formatVal = (val?: number | null) => (val == null ? '—' : String(val));
 
-  if (loading) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-        <div className="w-full max-w-6xl rounded-lg bg-white p-6">
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-600"></div>
-              <p className="mt-4 text-sm text-gray-600">Comparando propiedades...</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const rows: { label: string; icon: React.ReactNode; getValue: (p: PropertyComparison) => string }[] = [
+    { label: 'Precio', icon: <DollarSign className="w-3.5 h-3.5" />, getValue: (p) => formatCurrency(p.price, p.currency) },
+    { label: 'Superficie', icon: <Maximize2 className="w-3.5 h-3.5" />, getValue: (p) => formatArea(p.area) },
+    { label: 'Precio / m²', icon: <DollarSign className="w-3.5 h-3.5" />, getValue: (p) => formatCurrency(p.pricePerSqm, p.currency) },
+    { label: 'Dormitorios', icon: <BedDouble className="w-3.5 h-3.5" />, getValue: (p) => formatVal(p.bedrooms) },
+    { label: 'Baños', icon: <Bath className="w-3.5 h-3.5" />, getValue: (p) => formatVal(p.bathrooms) },
+    { label: 'Cocheras', icon: <CarFront className="w-3.5 h-3.5" />, getValue: (p) => formatVal(p.garages) },
+    { label: 'Operación', icon: <ArrowUpRight className="w-3.5 h-3.5" />, getValue: (p) => p.operation === 'sale' ? 'Venta' : 'Alquiler' },
+    { label: 'Tipo', icon: <MapPin className="w-3.5 h-3.5" />, getValue: (p) => p.propertyType.replace(/_/g, ' ') },
+    { label: 'Vistas', icon: <Eye className="w-3.5 h-3.5" />, getValue: (p) => p.views != null ? p.views.toLocaleString('es-AR') : '—' },
+    { label: 'Consultas', icon: <MessageCircle className="w-3.5 h-3.5" />, getValue: (p) => String(p.inquiriesCount) },
+  ];
 
-  if (error) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-        <div className="w-full max-w-6xl rounded-lg bg-white p-6">
-          <div className="flex items-center justify-between border-b border-gray-200 pb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Comparar Propiedades</h2>
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-          <div className="py-12 text-center">
-            <p className="text-red-600">{error}</p>
-            <button
-              type="button"
-              onClick={onClose}
-              className="mt-4 rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
-            >
-              Cerrar
-            </button>
-          </div>
-        </div>
+  const Overlay = ({ children }: { children: React.ReactNode }) => (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 backdrop-blur-sm p-4 animate-fade-in">
+      {children}
+    </div>
+  );
+
+  if (loading) return (
+    <Overlay>
+      <div className="bg-white rounded-2xl shadow-modal p-10 flex flex-col items-center gap-4">
+        <div className="w-10 h-10 rounded-full border-2 border-brand-200 border-t-brand-500 animate-spin" />
+        <p className="text-sm text-ink-muted">Comparando propiedades…</p>
       </div>
-    );
-  }
+    </Overlay>
+  );
+
+  if (error) return (
+    <Overlay>
+      <div className="bg-white rounded-2xl shadow-modal p-8 max-w-sm w-full text-center">
+        <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-4">
+          <X className="w-5 h-5 text-red-500" />
+        </div>
+        <h2 className="font-display font-semibold text-lg text-ink mb-2">No se pudo cargar</h2>
+        <p className="text-sm text-ink-muted mb-6">{error}</p>
+        <button onClick={onClose} className="btn-outline w-full justify-center">Cerrar</button>
+      </div>
+    </Overlay>
+  );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-      <div className="w-full max-w-7xl max-h-[90vh] overflow-auto rounded-lg bg-white shadow-xl">
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4">
-          <h2 className="text-lg font-semibold text-gray-900">Comparar Propiedades</h2>
+    <Overlay>
+      <div className="bg-white rounded-2xl shadow-modal w-full max-w-5xl max-h-[88vh] flex flex-col overflow-hidden">
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
+          <div>
+            <h2 className="font-display font-bold text-lg text-ink">Comparar propiedades</h2>
+            <p className="text-xs text-ink-muted mt-0.5">{comparisons.length} propiedades seleccionadas</p>
+          </div>
           <button
-            type="button"
             onClick={onClose}
-            className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            className="w-8 h-8 rounded-xl flex items-center justify-center text-ink-faint hover:bg-surface-muted hover:text-ink transition-colors"
           >
-            <X className="h-5 w-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                  Característica
+        {/* Table */}
+        <div className="overflow-auto flex-1">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-surface-soft border-b border-gray-100">
+                <th className="text-left px-5 py-4 w-36 flex-shrink-0">
+                  <span className="text-[11px] font-semibold uppercase tracking-widest text-ink-faint">Característica</span>
                 </th>
-                {comparisons.map((property) => (
-                  <th key={property.id} className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 min-w-[250px]">
-                    <div className="space-y-1">
-                      <p className="text-sm font-semibold text-gray-900">{property.title}</p>
-                      <p className="text-xs text-gray-500">{property.city}, {property.province}</p>
-                    </div>
+                {comparisons.map((p) => (
+                  <th key={p.id} className="text-left px-5 py-4 min-w-[220px]">
+                    <p className="font-display font-semibold text-sm text-ink leading-snug">{p.title}</p>
+                    {(p.city || p.province) && (
+                      <div className="flex items-center gap-1 mt-1">
+                        <MapPin className="w-3 h-3 text-brand-400 flex-shrink-0" />
+                        <span className="text-xs text-ink-muted truncate">{[p.city, p.province].filter(Boolean).join(', ')}</span>
+                      </div>
+                    )}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              <tr>
-                <td className="px-6 py-4 text-sm font-medium text-gray-900">Precio</td>
-                {comparisons.map((property) => (
-                  <td key={property.id} className="px-6 py-4 text-sm text-gray-900">
-                    {formatCurrency(property.price, property.currency)}
+            <tbody>
+              {rows.map((row, i) => (
+                <tr key={row.label} className={i % 2 === 0 ? 'bg-white' : 'bg-surface-soft'}>
+                  <td className="px-5 py-3.5 border-r border-gray-100">
+                    <div className="flex items-center gap-2 text-ink-muted">
+                      <span className="text-brand-400">{row.icon}</span>
+                      <span className="text-xs font-medium">{row.label}</span>
+                    </div>
                   </td>
-                ))}
-              </tr>
-              <tr className="bg-gray-50">
-                <td className="px-6 py-4 text-sm font-medium text-gray-900">Superficie</td>
-                {comparisons.map((property) => (
-                  <td key={property.id} className="px-6 py-4 text-sm text-gray-900">
-                    {formatArea(property.area)}
-                  </td>
-                ))}
-              </tr>
-              <tr>
-                <td className="px-6 py-4 text-sm font-medium text-gray-900">Precio por m²</td>
-                {comparisons.map((property) => (
-                  <td key={property.id} className="px-6 py-4 text-sm text-gray-900">
-                    {formatCurrency(property.pricePerSqm, property.currency)}
-                  </td>
-                ))}
-              </tr>
-              <tr className="bg-gray-50">
-                <td className="px-6 py-4 text-sm font-medium text-gray-900">Dormitorios</td>
-                {comparisons.map((property) => (
-                  <td key={property.id} className="px-6 py-4 text-sm text-gray-900">
-                    {property.bedrooms}
-                  </td>
-                ))}
-              </tr>
-              <tr>
-                <td className="px-6 py-4 text-sm font-medium text-gray-900">Baños</td>
-                {comparisons.map((property) => (
-                  <td key={property.id} className="px-6 py-4 text-sm text-gray-900">
-                    {property.bathrooms}
-                  </td>
-                ))}
-              </tr>
-              <tr className="bg-gray-50">
-                <td className="px-6 py-4 text-sm font-medium text-gray-900">Cocheras</td>
-                {comparisons.map((property) => (
-                  <td key={property.id} className="px-6 py-4 text-sm text-gray-900">
-                    {property.garages}
-                  </td>
-                ))}
-              </tr>
-              <tr>
-                <td className="px-6 py-4 text-sm font-medium text-gray-900">Tipo de Operación</td>
-                {comparisons.map((property) => (
-                  <td key={property.id} className="px-6 py-4 text-sm text-gray-900 capitalize">
-                    {property.operation === 'sale' ? 'Venta' : 'Alquiler'}
-                  </td>
-                ))}
-              </tr>
-              <tr className="bg-gray-50">
-                <td className="px-6 py-4 text-sm font-medium text-gray-900">Tipo de Propiedad</td>
-                {comparisons.map((property) => (
-                  <td key={property.id} className="px-6 py-4 text-sm text-gray-900 capitalize">
-                    {property.propertyType.replace(/_/g, ' ')}
-                  </td>
-                ))}
-              </tr>
-              <tr>
-                <td className="px-6 py-4 text-sm font-medium text-gray-900">Vistas</td>
-                {comparisons.map((property) => (
-                  <td key={property.id} className="px-6 py-4 text-sm text-gray-900">
-                    {property.views != null ? property.views.toLocaleString('es-AR') : '-'}
-                  </td>
-                ))}
-              </tr>
-              <tr className="bg-gray-50">
-                <td className="px-6 py-4 text-sm font-medium text-gray-900">Consultas Recibidas</td>
-                {comparisons.map((property) => (
-                  <td key={property.id} className="px-6 py-4 text-sm text-gray-900">
-                    {property.inquiriesCount}
-                  </td>
-                ))}
-              </tr>
+                  {comparisons.map((p) => (
+                    <td key={p.id} className="px-5 py-3.5 text-sm font-medium text-ink border-r border-gray-100 last:border-r-0">
+                      {row.getValue(p)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
 
-        <div className="border-t border-gray-200 px-6 py-4">
-          <div className="flex justify-end">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
-            >
-              Cerrar
-            </button>
-          </div>
+        {/* Footer */}
+        <div className="px-6 py-4 border-t border-gray-100 flex justify-end flex-shrink-0">
+          <button onClick={onClose} className="btn-outline">Cerrar</button>
         </div>
+
       </div>
-    </div>
+    </Overlay>
   );
 }

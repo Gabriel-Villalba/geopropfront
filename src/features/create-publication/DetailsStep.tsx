@@ -1,4 +1,5 @@
 import type { City } from '../../types';
+import { CitySelectField } from '../../components';
 import type { CreatePublicationPropertyType, StepProps } from './types';
 
 function toNumberOrUndefined(value: string): number | undefined {
@@ -26,14 +27,12 @@ function supportsCoveredArea(propertyType?: CreatePublicationPropertyType): bool
 function supportsRooms(propertyType?: CreatePublicationPropertyType): boolean {
   return propertyType !== 'lote';
 }
-
 interface DetailsStepExtendedProps extends StepProps {
   cities: City[];
   isLoadingCities: boolean;
   citiesError: string | null;
   onRetryCities: () => void;
 }
-
 export function DetailsStep({
   state,
   updateField,
@@ -42,8 +41,6 @@ export function DetailsStep({
   citiesError,
   onRetryCities,
 }: DetailsStepExtendedProps) {
-  const isCitySelectDisabled = isLoadingCities || !!citiesError;
-  const hasEmptyCities = !isLoadingCities && !citiesError && cities.length === 0;
 
   return (
     <section className="space-y-4">
@@ -207,43 +204,17 @@ export function DetailsStep({
             />
           </label>
         )}
-
-        <div className="grid gap-1.5">
-          <span className="text-sm font-medium text-slate-700">Ciudad o localidad (Santa Fe)</span>
-          <select
-            value={state.cityId}
-            onChange={(event) => {
-              const nextCityId = event.target.value;
-              updateField('cityId', nextCityId);
-              const selectedCity = cities.find((city) => city.id === nextCityId);
-              updateField('ciudad', selectedCity?.name ?? '');
-            }}
-            disabled={isCitySelectDisabled}
-            className="border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500 disabled:cursor-not-allowed disabled:bg-slate-100"
-          >
-            <option value="">
-              {isLoadingCities ? 'Cargando ciudades...' : 'Seleccionar ciudad o localidad'}
-            </option>
-            {cities.map((city) => (
-              <option key={city.id} value={city.id}>
-                {city.name}
-              </option>
-            ))}
-          </select>
-          {citiesError && (
-            <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
-              <p>{citiesError}</p>
-              <button
-                type="button"
-                onClick={onRetryCities}
-                className="mt-2 rounded-md border border-rose-300 px-2 py-1 font-semibold transition hover:bg-rose-100"
-              >
-                Reintentar ciudades
-              </button>
-            </div>
-          )}
-          {hasEmptyCities && <p className="text-xs text-amber-700">No hay ciudades/localidades disponibles para Santa Fe.</p>}
-        </div>
+        <CitySelectField
+          value={state.cityId}
+          cities={cities}
+          isLoading={isLoadingCities}
+          error={citiesError}
+          onRetry={onRetryCities}
+          onChange={(nextCityId, selectedCity) => {
+            updateField('cityId', nextCityId);
+            updateField('ciudad', selectedCity?.name ?? '');
+          }}
+        />
 
         <label className="grid gap-1.5">
           <span className="text-sm font-medium text-slate-700">Direccion</span>
@@ -276,3 +247,4 @@ export function DetailsStep({
     </section>
   );
 }
+

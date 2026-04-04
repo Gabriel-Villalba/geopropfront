@@ -29,6 +29,18 @@ const formatPricePerM2 = (amount?: number | null, area?: number | null, currency
   return `${currency} ${Math.round(amount / area).toLocaleString('es-AR')}`;
 };
 
+const formatCondition = (condition?: Property['condition'] | null) => {
+  if (condition === 'a_estrenar') return 'A estrenar';
+  if (condition === 'usado') return 'Usado';
+  if (condition === 'a_refaccionar') return 'A refaccionar';
+  return null;
+};
+
+const formatMoney = (value?: number | null, currency?: string | null) => {
+  if (value == null || !currency) return null;
+  return `${currency} ${value.toLocaleString('es-AR')}`;
+};
+
 const formatRelativeDate = (iso?: string | null) => {
   if (!iso) return null;
   const date = new Date(iso);
@@ -56,6 +68,11 @@ export function PropertyCard({ property, onClick, index }: PropertyCardProps) {
   const pricePerM2Covered = showCovered
     ? formatPricePerM2(property.price?.amount, property.specs?.coveredArea, property.price?.currency)
     : null;
+  const conditionLabel = formatCondition(property.condition);
+  const expensesLabel =
+    property.operation === 'alquiler'
+      ? formatMoney(property.specs?.expensesMonthly, property.price?.currency)
+      : null;
   const { isFavorite, toggleFavorite } = useFavorites();
   const favorite = isFavorite(property.id);
 
@@ -93,8 +110,8 @@ export function PropertyCard({ property, onClick, index }: PropertyCardProps) {
             {property.type}
           </span>
         )}
-
         <FeaturedBadge isFeatured={isFeatured} className="absolute right-3 top-3" />
+
         <button
           type="button"
           onClick={(event) => {
@@ -126,6 +143,11 @@ export function PropertyCard({ property, onClick, index }: PropertyCardProps) {
         <div className="font-display font-bold text-xl text-ink tracking-tight">
           {formatPrice(property.price?.amount, property.price?.currency)}
         </div>
+        {conditionLabel && (
+          <span className="inline-flex w-fit rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
+            {conditionLabel}
+          </span>
+        )}
         {pricePerM2Total && (
           <div className="text-xs text-ink-muted">
             {pricePerM2Total} / m² total
@@ -136,8 +158,12 @@ export function PropertyCard({ property, onClick, index }: PropertyCardProps) {
             {pricePerM2Covered} / m² cubierto
           </div>
         )}
+        {expensesLabel && (
+          <div className="text-xs text-ink-muted">
+            Expensas: {expensesLabel}
+          </div>
+        )}
         {publishedLabel && <div className="text-xs text-ink-faint">{publishedLabel}</div>}
-
         {/* Location */}
         <div className="flex items-center gap-1.5 text-sm text-ink-muted">
           <MapPin className="h-3.5 w-3.5 text-brand-500 flex-shrink-0" />

@@ -356,28 +356,26 @@ export default function MyPropertiesPage() {
                       Vence: {new Date(entry.listing.listingExpiresAt).toLocaleDateString('es-AR')}
                     </p>
                   )}
-
                   {metrics[entry.id] && (
-                    <div className="mt-3 grid gap-2 sm:grid-cols-4 text-xs text-slate-600">
+                    <div className="mt-3 grid gap-2 sm:grid-cols-3 text-xs text-slate-600">
                       <div className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2">
-                        <p className="text-[11px] text-slate-500">Vistas</p>
-                        <p className="text-sm font-semibold text-slate-900">{metrics[entry.id].views}</p>
+                        <p className="text-[11px] text-slate-500">Vistas esta semana</p>
+                        <p className="text-sm font-semibold text-slate-900">{metrics[entry.id].viewsCurrent}</p>
+                        <p className="text-[11px] text-slate-500">Semana anterior: {metrics[entry.id].viewsPrevious}</p>
                       </div>
                       <div className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2">
-                        <p className="text-[11px] text-slate-500">Consultas</p>
-                        <p className="text-sm font-semibold text-slate-900">{metrics[entry.id].inquiriesTotal}</p>
-                      </div>
-                      <div className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2">
-                        <p className="text-[11px] text-slate-500">ConversiÃ³n</p>
-                        <p className="text-sm font-semibold text-slate-900">
-                          {(metrics[entry.id].conversion * 100).toFixed(1)}%
-                        </p>
+                        <p className="text-[11px] text-slate-500">Consultas esta semana</p>
+                        <p className="text-sm font-semibold text-slate-900">{metrics[entry.id].inquiriesCurrent}</p>
+                        <p className="text-[11px] text-slate-500">Semana anterior: {metrics[entry.id].inquiriesPrevious}</p>
                       </div>
                       <div className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 flex items-center justify-between">
                         <div>
-                          <p className="text-[11px] text-slate-500">Semana vs anterior</p>
+                          <p className="text-[11px] text-slate-500">ConversiÃ³n total</p>
                           <p className="text-sm font-semibold text-slate-900">
-                            {metrics[entry.id].changePercent >= 0 ? '+' : ''}
+                            {(metrics[entry.id].conversion * 100).toFixed(1)}%
+                          </p>
+                          <p className="text-[11px] text-slate-500">
+                            Semana vs anterior: {metrics[entry.id].changePercent >= 0 ? '+' : ''}
                             {metrics[entry.id].changePercent}%
                           </p>
                         </div>

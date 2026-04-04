@@ -1,11 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 import {
   Bath, BedDouble, CalendarClock, CarFront, ChevronLeft, ChevronRight,
   Home, LandPlot, LayoutGrid, MapPin, Maximize2, MessageCircle,
   ArrowLeft, Send, User, Mail, ChevronDown, ChevronUp, BadgeCheck, Eye, Wallet, Heart,
 } from 'lucide-react';
 import { Navbar } from '../components';
+
 import { inquiryApi, propertyApi } from '../services/api';
 import { getApiErrorMessage } from '../services/backend';
 import type { Property } from '../types';
@@ -16,6 +23,16 @@ interface PropertyDetailPageLocationState {
   property?: Property;
 }
 
+
+const defaultLeafletIcon = L.icon({
+  iconRetinaUrl: markerIcon2x,
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
 /* ── helpers ── */
 const formatPrice = (amount?: number | null, currency?: string | null) => {
   if (!amount || !currency) return 'Consultar precio';
@@ -44,6 +61,12 @@ const formatRelativeDate = (iso?: string | null) => {
 const formatMoney = (value?: number | null, currency?: string | null) => {
   if (value == null || !currency) return null;
   return `${currency} ${value.toLocaleString('es-AR')}`;
+};
+const formatCondition = (condition?: Property['condition'] | null) => {
+  if (condition === 'a_estrenar') return 'A estrenar';
+  if (condition === 'usado') return 'Usado';
+  if (condition === 'a_refaccionar') return 'A refaccionar';
+  return null;
 };
 const shouldShowCoveredPrice = (type?: Property['type'] | null) =>
   type === 'casa' || type === 'comercial' || type === 'galpon-deposito';
@@ -118,6 +141,11 @@ export default function PropertyDetailPage() {
 
   /* publisher */
   const publisherName = property.publisher?.name ?? 'Sin especificar';
+  const conditionLabel = formatCondition(property.condition);
+  const expensesLabel =
+    property.operation === 'alquiler'
+      ? formatMoney(property.specs?.expensesMonthly, property.price?.currency)
+      : null;
   const phoneRaw      = property.publisher?.phone ?? '';
   const phoneDigits   = phoneRaw.replace(/\D/g, '');
   const whatsappLink  = phoneDigits
@@ -134,7 +162,7 @@ export default function PropertyDetailPage() {
     { label: 'cochera',      value: formatCount(property.specs?.parking, 'cochera', 'cocheras'), icon: CarFront },
     { label: 'dormitorios',  value: formatCount(property.specs?.bedrooms, 'dormitorio', 'dormitorios'), icon: BedDouble },
     { label: 'antigüedad',   value: formatCount(property.specs?.ageYears, 'año', 'años'),        icon: CalendarClock },
-    { label: 'estado',       value: property.condition === 'a_estrenar' ? 'A estrenar' : property.condition === 'usado' ? 'Usado' : property.condition === 'a_refaccionar' ? 'A refaccionar' : null, icon: BadgeCheck },
+    { label: 'estado',       value: formatCondition(property.condition), icon: BadgeCheck },
     { label: 'expensas',     value: formatMoney(property.specs?.expensesMonthly, property.price?.currency), icon: Wallet },
   ].filter((s) => Boolean(s.value));
 
@@ -142,10 +170,7 @@ export default function PropertyDetailPage() {
   const lat = cityMatch?.latitude ? Number(cityMatch.latitude) : null;
   const lng = cityMatch?.longitude ? Number(cityMatch.longitude) : null;
   const hasMap = Number.isFinite(lat) && Number.isFinite(lng);
-  const mapUrl = hasMap
-    ? `https://www.openstreetmap.org/export/embed.html?bbox=${(lng as number) - 0.02}%2C${(lat as number) - 0.02}%2C${(lng as number) + 0.02}%2C${(lat as number) + 0.02}&layer=mapnik&marker=${lat}%2C${lng}`
-    : null;
-
+  const mapCenter = hasMap ? ([lat as number, lng as number] as [number, number]) : null;
   /* fake submit — reemplazá con tu lógica */
   const locationLabel = property.subtitle
     ? property.subtitle
@@ -238,6 +263,11 @@ export default function PropertyDetailPage() {
               {property.type && (
                 <span className="bg-surface-muted text-ink-muted text-xs font-medium uppercase tracking-wide px-2.5 py-1 rounded-lg border border-gray-100">
                   {property.type}
+                </span>
+              )}
+              {conditionLabel && (
+                <span className="bg-emerald-50 text-emerald-700 text-xs font-semibold uppercase tracking-wide px-2.5 py-1 rounded-lg border border-emerald-100">
+                  {conditionLabel}
                 </span>
               )}
             </div>
@@ -368,6 +398,11 @@ export default function PropertyDetailPage() {
                       {formatPricePerM2(property.price?.amount, property.specs?.coveredArea, property.price?.currency)} / m² cubierto
                     </p>
                   )}
+                {expensesLabel && (
+                  <p className="text-xs text-ink-muted">
+                    Expensas: {expensesLabel}
+                  </p>
+                )}
 
                 {formatRelativeDate(property.publishedAt ?? property.createdAt ?? null) && (
                   <p className="text-xs text-ink-faint mt-2">
@@ -492,19 +527,25 @@ export default function PropertyDetailPage() {
 
             </div>
           </div>
-
-          {hasMap && mapUrl && (
+          {hasMap && mapCenter && (
             <div className="mt-8 bg-white rounded-2xl border border-gray-100 shadow-card overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-100">
                 <h2 className="text-xs font-semibold uppercase tracking-widest text-ink-muted">UbicaciÃ³n aproximada</h2>
               </div>
-              <iframe
-                title="Mapa"
-                src={mapUrl}
-                className="w-full h-72"
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
+              <div className="h-72 w-full">
+                <MapContainer center={mapCenter} zoom={14} scrollWheelZoom={false} className="h-full w-full">
+                  <TileLayer
+                    attribution="&copy; OpenStreetMap contributors"
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+                  <Marker position={mapCenter} icon={defaultLeafletIcon}>
+                    <Popup>
+                      {property.location?.city}
+                      {property.location?.locality ? `, ${property.location.locality}` : ''}
+                    </Popup>
+                  </Marker>
+                </MapContainer>
+              </div>
             </div>
           )}
         </div>
@@ -512,5 +553,6 @@ export default function PropertyDetailPage() {
     </div>
   );
 }
+
 
 
