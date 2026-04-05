@@ -47,8 +47,10 @@ export interface Property {
   descriptionShort?: string | null;
   location?: {
     city?: string | null;
+    province?: string | null;
     locality?: string | null;
   };
+  sourceUrl?: string | null;
   specs?: {
     totalArea?: number | null;
     coveredArea?: number | null;
@@ -90,6 +92,7 @@ export interface PropertyComparison {
 
 export interface PropertyFilters {
   city?: string;
+  province?: string;
  operation?: 'venta' | 'alquiler' | null;
  type?: 'casa' | 'departamento' | 'lote' | 'comercial' | 'galpon-deposito' | null;
   sizeCategory?: 'small' | 'medium' | 'large';
@@ -109,6 +112,7 @@ export interface PropertyFilters {
   sortBy?: string;
   order?: 'asc' | 'desc';
   publisherType?: string;
+  external?: string;
 }
 
 export interface LoginCredentials {

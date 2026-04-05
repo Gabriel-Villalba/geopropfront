@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import type { PropertyFilters } from '../types';
 
 export interface FiltersFormState {
+  province: string;
   city: string;
   operation?: 'venta' | 'alquiler' | null;
   type: 'casa' | 'departamento' | 'lote' | 'comercial' | 'galpon-deposito' | '';
@@ -19,6 +20,7 @@ export interface FiltersFormState {
 }
 
 const DEFAULT_FILTERS: FiltersFormState = {
+  province: '',
   city: '',
   operation: null,
   type: '',
@@ -50,6 +52,7 @@ export function useFilters(initialFilters = DEFAULT_FILTERS) {
 
   const params = useMemo<PropertyFilters>(() => {
     const base: PropertyFilters = {
+      province: filters.province || undefined,
       city: filters.city || undefined,
       operation: filters.operation || undefined,
       type: filters.type || undefined,

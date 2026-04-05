@@ -19,6 +19,7 @@ const EditPropertyRoute = lazy(() => import('./pages/panel/properties/edit'));
 const CreateAlertPage = lazy(() => import('./pages/panel/alerts/CreateAlertPage'));
 const CustomCursor = lazy(() => import('./components/CustomCursor'));
 const PropertyDetailPage = lazy(() => import('./pages/PropertyDetailPage'));
+const ExternalSearchPage = lazy(() => import('./pages/ExternalSearchPage'));
 const HelpPage = lazy(() => import('./pages/Help'));
 const FavoritesPage = lazy(() => import('./pages/FavoritesPage'));
 const InquiriesPage = lazy(() => import('./pages/panel/inquiries/InquiriesPage'));
@@ -60,6 +61,7 @@ function App() {
                 <Route path="/panel/properties/create" element={<ProtectedRoute><CreatePropertyRoute /></ProtectedRoute>} />
                 <Route path="/panel/properties/:id/edit" element={<ProtectedRoute><EditPropertyRoute /></ProtectedRoute>} />
                 <Route path="/panel/alerts" element={<ProtectedRoute><CreateAlertPage /></ProtectedRoute>} />
+                <Route path="/busqueda-externa" element={<ProtectedRoute><ExternalSearchPage /></ProtectedRoute>} />
                 <Route path="/ayuda" element={<HelpPage />} />
                 <Route path="/favoritos" element={<FavoritesPage />} />
                 <Route path="/" element={<HomeRedirect />} />

@@ -3,6 +3,7 @@ import { AnimatePresence, cubicBezier, motion } from 'framer-motion';
 import { MapPin, ChevronDown, SlidersHorizontal, Search, RotateCcw } from 'lucide-react';
 import type { FiltersFormState } from '../hooks/useFilters';
 import { useSantaFeCities } from '../hooks/useSantaFeCities';
+import type { City, Province } from '../types';
 
 interface FiltersProps {
   filters: FiltersFormState;
@@ -10,6 +11,13 @@ interface FiltersProps {
   onSubmit: () => void;
   onReset: () => void;
   isLoading: boolean;
+  provinces?: Province[];
+  isLoadingProvinces?: boolean;
+  citiesOverride?: City[];
+  isLoadingCitiesOverride?: boolean;
+  isRetryingCitiesOverride?: boolean;
+  citiesErrorOverride?: string | null;
+  onRetryCitiesOverride?: () => void;
 }
 
 type DropdownType = 'price' | 'operation' | 'type' | 'advanced' | null;
@@ -31,10 +39,35 @@ const dropdownMotion = {
   transition: { duration: 0.18, ease: cubicBezier(0.22, 1, 0.36, 1) },
 };
 
-export function Filters({ filters, onChange, onSubmit, onReset, isLoading }: FiltersProps) {
+export function Filters({
+  filters,
+  onChange,
+  onSubmit,
+  onReset,
+  isLoading,
+  provinces,
+  isLoadingProvinces,
+  citiesOverride,
+  isLoadingCitiesOverride,
+  isRetryingCitiesOverride,
+  citiesErrorOverride,
+  onRetryCitiesOverride,
+}: FiltersProps) {
   const [openDropdown, setOpenDropdown] = useState<DropdownType>(null);
   const wrapperRef = useRef<HTMLFormElement>(null);
-  const { cities, isLoadingCities, isRetryingCities, citiesError, reloadCities } = useSantaFeCities();
+  const {
+    cities: fallbackCities,
+    isLoadingCities: fallbackLoading,
+    isRetryingCities: fallbackRetrying,
+    citiesError: fallbackError,
+    reloadCities: fallbackReload,
+  } = useSantaFeCities();
+
+  const cities = citiesOverride ?? fallbackCities;
+  const isLoadingCities = isLoadingCitiesOverride ?? fallbackLoading;
+  const isRetryingCities = isRetryingCitiesOverride ?? fallbackRetrying;
+  const citiesError = citiesErrorOverride ?? fallbackError;
+  const reloadCities = onRetryCitiesOverride ?? fallbackReload;
 
   useEffect(() => {
     if (!filters.city || cities.length === 0) return;
@@ -123,6 +156,28 @@ export function Filters({ filters, onChange, onSubmit, onReset, isLoading }: Fil
             )}
           </AnimatePresence>
         </div>
+
+        {/* City */}
+        {provinces && (
+          <div className="relative flex items-center">
+            <select
+              value={filters.province}
+              onChange={(e) => onChange('province', e.target.value)}
+              disabled={isLoadingProvinces}
+              className="pl-4 pr-8 py-2.5 text-sm border border-gray-200 rounded-xl bg-white text-ink outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 transition appearance-none cursor-pointer disabled:bg-gray-50 disabled:text-ink-muted min-w-[200px]"
+            >
+              <option value="">
+                {isLoadingProvinces ? 'Cargando provincias...' : 'Provincia'}
+              </option>
+              {provinces.map((province) => (
+                <option key={province.id} value={province.slug}>
+                  {province.name}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-ink-faint pointer-events-none" />
+          </div>
+        )}
 
         {/* City */}
         <div className="relative flex items-center">

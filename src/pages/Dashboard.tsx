@@ -7,14 +7,17 @@ import { useProperties } from '../hooks/useProperties';
 import { Heart, PackageOpen, Search, TrendingUp } from 'lucide-react';
 import { PublishPropertyCTA } from '../components/PublishPropertyCTA';
 import { useFavorites } from '../hooks/useFavorites';
+import { useAuth } from '../contexts/AuthContext';
 
 export function Dashboard() {
   const { filters, params, updateFilter, resetFilters } = useFilters();
   const { properties, isLoading, isRetrying, error, hasFetched, fetchProperties } = useProperties();
   const { visibleItems, currentPage, totalPages, totalCount, goToPage } = usePagination(properties, 6);
   const { favorites } = useFavorites();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const initialParamsRef = useRef(params);
+  const canExternalSearch = user?.plan === 'INMOBILIARIA' || user?.plan === 'BROKER';
 
   useEffect(() => {
     void fetchProperties(initialParamsRef.current);
@@ -50,7 +53,18 @@ export function Dashboard() {
                 Explorá, filtrá y compará cientos de inmuebles. Simple, rápido y sin vueltas.
               </p>
             </div>
-            <PublishPropertyCTA />
+            <div className="flex flex-wrap items-center gap-3">
+              {canExternalSearch && (
+                <button
+                  type="button"
+                  onClick={() => navigate('/busqueda-externa')}
+                  className="btn-ghost border border-gray-200 hover:border-brand-200"
+                >
+                  Búsqueda externa
+                </button>
+              )}
+              <PublishPropertyCTA />
+            </div>
           </div>
         </header>
 

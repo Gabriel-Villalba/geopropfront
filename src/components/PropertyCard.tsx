@@ -204,6 +204,17 @@ export function PropertyCard({ property, onClick, index }: PropertyCardProps) {
         {/* Publisher */}
         <div className="pt-3 border-t border-gray-100 text-xs text-ink-muted">
           Por <span className="font-medium text-ink">{publisherName}</span>
+          {property.sourceUrl && (
+            <a
+              href={property.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(event) => event.stopPropagation()}
+              className="ml-2 text-brand-500 hover:text-brand-600 font-medium"
+            >
+              Ver publicación
+            </a>
+          )}
         </div>
       </div>
     </motion.article>
