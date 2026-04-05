@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+Ôªøimport { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download, Printer } from 'lucide-react';
 import { Filters, Navbar, Pagination, PropertyCard } from '../components';
@@ -105,14 +105,14 @@ export default function ExternalSearchPage() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="space-y-2 max-w-2xl">
               <h1 className="font-display font-bold text-3xl sm:text-4xl text-ink tracking-tight leading-tight">
-                B˙squeda externa
+                B√∫squeda externa
               </h1>
               <p className="text-ink-muted text-sm leading-relaxed">
-                Consult· oportunidades en portales externos sin salir de GeoProp.
+                Consult√° oportunidades en portales externos sin salir de GeoProp.
               </p>
               {!isAllowed && (
                 <p className="text-xs text-rose-600">
-                  Esta funciÛn est· disponible solo para planes Inmobiliaria o Broker.
+                  Esta funci√≥n est√° disponible solo para planes Inmobiliaria o Broker.
                 </p>
               )}
             </div>
@@ -149,7 +149,9 @@ export default function ExternalSearchPage() {
           provinces={provinces}
           isLoadingProvinces={isLoadingProvinces}
           citiesOverride={cities}
-          isLoadingCitiesOverride={isLoadingCities}\n          isRetryingCitiesOverride={false}\n          citiesErrorOverride={citiesError}
+          isLoadingCitiesOverride={isLoadingCities}
+          isRetryingCitiesOverride={false}
+          citiesErrorOverride={citiesError}
           onRetryCitiesOverride={() => void reloadCities()}
         />
 
@@ -164,7 +166,7 @@ export default function ExternalSearchPage() {
             <div className="flex flex-col items-center justify-center rounded-2xl bg-white border border-gray-100 py-20 shadow-card">
               <div className="w-10 h-10 rounded-full border-2 border-brand-200 border-t-brand-500 animate-spin" />
               <p className="mt-4 text-sm text-ink-muted">
-                {isRetrying ? 'Reintentando conexiÛn...' : 'Buscando...' }
+                {isRetrying ? 'Reintentando conexi√≥n...' : 'Buscando...' }
               </p>
             </div>
           ) : hasFetched ? (
@@ -195,13 +197,13 @@ export default function ExternalSearchPage() {
             ) : (
               <div className="flex flex-col items-center justify-center rounded-2xl bg-white border border-gray-100 py-20 shadow-card text-center px-6">
                 <h3 className="font-display font-semibold text-lg text-ink">Sin resultados</h3>
-                <p className="mt-2 text-sm text-ink-muted max-w-xs">Prob· con otra zona o filtros.</p>
+                <p className="mt-2 text-sm text-ink-muted max-w-xs">Prob√° con otra zona o filtros.</p>
               </div>
             )
           ) : (
             <div className="flex flex-col items-center justify-center rounded-2xl bg-white border border-gray-100 py-20 shadow-card text-center px-6">
-              <h3 className="font-display font-semibold text-lg text-ink">Empez· a buscar</h3>
-              <p className="mt-2 text-sm text-ink-muted max-w-xs">ElegÌ provincia, ciudad y filtros para buscar en portales externos.</p>
+              <h3 className="font-display font-semibold text-lg text-ink">Empez√° a buscar</h3>
+              <p className="mt-2 text-sm text-ink-muted max-w-xs">Eleg√≠ provincia, ciudad y filtros para buscar en portales externos.</p>
             </div>
           )}
         </section>
@@ -209,4 +211,5 @@ export default function ExternalSearchPage() {
     </div>
   );
 }
+
 
