@@ -1,4 +1,4 @@
-import { ArrowLeft, BadgeCheck, Mail, UserRound } from 'lucide-react';
+﻿import { ArrowLeft, BadgeCheck, Mail, UserRound } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Navbar } from '../../../components';
@@ -12,6 +12,7 @@ export default function EditProfilePage() {
   const [displayName, setDisplayName]           = useState('');
   const [email, setEmail]                       = useState('');
   const [contactPhone, setContactPhone]         = useState('');
+  const [instagramUrl, setInstagramUrl]         = useState('');
   const [password, setPassword]                 = useState('');
 
   useEffect(() => { void loadPanel(); }, [loadPanel]);
@@ -19,6 +20,7 @@ export default function EditProfilePage() {
     setDisplayName(profile?.name ?? '');
     setEmail(profile?.email ?? '');
     setContactPhone(profile?.phone ?? '');
+    setInstagramUrl(profile?.instagramUrl ?? '');
     setPassword('');
   }, [profile]);
 
@@ -27,6 +29,7 @@ export default function EditProfilePage() {
     const updated = await updateProfile({
       name: displayName.trim(), email: email.trim(),
       phone: contactPhone.trim() || null,
+      instagramUrl: instagramUrl.trim() || null,
       password: password.trim() || undefined,
     });
     if (updated) updateUser(updated);
@@ -112,6 +115,12 @@ export default function EditProfilePage() {
               </label>
 
               <label className="block space-y-1.5">
+                <span className="text-sm font-medium text-ink">Instagram (URL)</span>
+                <input value={instagramUrl} onChange={(e) => setInstagramUrl(e.target.value)}
+                  placeholder="https://instagram.com/tuusuario" className="input-base" />
+              </label>
+
+              <label className="block space-y-1.5">
                 <span className="text-sm font-medium text-ink">Nueva contraseña <span className="text-ink-faint font-normal">(opcional)</span></span>
                 <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
                   placeholder="Mínimo 8 caracteres" className="input-base" />
@@ -120,16 +129,16 @@ export default function EditProfilePage() {
 
             
             <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-5">
-              <h2 className="text-xs font-semibold uppercase tracking-widest text-ink-muted mb-2">Planes y suscripcion</h2>
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-ink-muted mb-2">Planes y suscripción</h2>
               <p className="text-sm text-ink-muted mb-4">
-                Administra tu plan, fechas y estado de suscripcion desde un lugar dedicado.
+                Administra tu plan, fechas y estado de suscripción desde un lugar dedicado.
               </p>
               <button
                 type="button"
                 onClick={() => navigate('/panel/plans')}
                 className="btn-primary w-full justify-center"
               >
-                Planes y suscripcion
+                Planes y suscripción
               </button>
             </div>
             <button type="button" onClick={handleSave} disabled={isSavingProfile}
@@ -145,6 +154,8 @@ export default function EditProfilePage() {
     </div>
   );
 }
+
+
 
 
 

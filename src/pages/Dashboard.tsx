@@ -107,7 +107,7 @@ export function Dashboard() {
                   </div>
                 </div>
 
-                <div key={currentPage} className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                <div key={currentPage} className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {visibleItems.map((property, index) => (
                     <PropertyCard
                       key={property.id}

@@ -1,5 +1,5 @@
-import { motion } from 'framer-motion';
-import { Bath, BedDouble, CarFront, MapPin, Maximize2, ArrowUpRight, Heart } from 'lucide-react';
+﻿import { motion } from 'framer-motion';
+import { ArrowUpRight, Heart } from 'lucide-react';
 import { FeaturedBadge } from '../features/listings';
 import type { Property } from '../types';
 import { useFavorites } from '../hooks/useFavorites';
@@ -11,7 +11,7 @@ interface PropertyCardProps {
 }
 
 const formatPrice = (amount?: number | null, currency?: string | null) => {
-  if (!amount || !currency) return 'Consultar';
+  if (!amount || !currency) return 'Consultar precio';
   return `${currency} ${amount.toLocaleString('es-AR')}`;
 };
 
@@ -20,61 +20,22 @@ const getImageUrl = (property: Property) =>
   property.image ||
   'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=900&q=80';
 
-const shouldShowCoveredPrice = (type?: Property['type'] | null) =>
-  type === 'casa' || type === 'comercial' || type === 'galpon-deposito';
-
-const formatPricePerM2 = (amount?: number | null, area?: number | null, currency?: string | null) => {
-  if (!amount || !area || !currency) return null;
-  if (area <= 0) return null;
-  return `${currency} ${Math.round(amount / area).toLocaleString('es-AR')}`;
-};
-
-const formatCondition = (condition?: Property['condition'] | null) => {
-  if (condition === 'a_estrenar') return 'A estrenar';
-  if (condition === 'usado') return 'Usado';
-  if (condition === 'a_refaccionar') return 'A refaccionar';
-  return null;
-};
-
-const formatMoney = (value?: number | null, currency?: string | null) => {
-  if (value == null || !currency) return null;
-  return `${currency} ${value.toLocaleString('es-AR')}`;
-};
-
-const formatRelativeDate = (iso?: string | null) => {
-  if (!iso) return null;
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return null;
+const getSoldBadge = (property: Property) => {
+  if (!property.soldAt) return null;
+  const soldDate = new Date(property.soldAt);
+  if (Number.isNaN(soldDate.getTime())) return null;
   const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  if (diffDays <= 0) return 'Publicado hoy';
-  if (diffDays === 1) return 'Publicado ayer';
-  if (diffDays < 30) return `Publicado hace ${diffDays} días`;
-  return `Publicado el ${date.toLocaleDateString('es-AR')}`;
+  const diffDays = Math.floor((now.getTime() - soldDate.getTime()) / (1000 * 60 * 60 * 24));
+  if (diffDays < 0 || diffDays > 30) return null;
+  return property.soldType === 'rent' ? 'ALQUILADO' : 'VENDIDO';
 };
 
 export function PropertyCard({ property, onClick, index }: PropertyCardProps) {
   const imageUrl = getImageUrl(property);
-  const publisherName = property.publisher?.name ?? 'Sin especificar';
   const isFeatured = property.listing?.isFeatured ?? false;
-  const publishedLabel = formatRelativeDate(property.publishedAt ?? property.createdAt ?? null);
-  const pricePerM2Total = formatPricePerM2(
-    property.price?.amount,
-    property.specs?.totalArea,
-    property.price?.currency,
-  );
-  const showCovered = shouldShowCoveredPrice(property.type);
-  const pricePerM2Covered = showCovered
-    ? formatPricePerM2(property.price?.amount, property.specs?.coveredArea, property.price?.currency)
-    : null;
-  const conditionLabel = formatCondition(property.condition);
-  const expensesLabel =
-    property.operation === 'alquiler'
-      ? formatMoney(property.specs?.expensesMonthly, property.price?.currency)
-      : null;
   const { isFavorite, toggleFavorite } = useFavorites();
   const favorite = isFavorite(property.id);
+  const soldBadge = getSoldBadge(property);
 
   return (
     <motion.article
@@ -89,13 +50,19 @@ export function PropertyCard({ property, onClick, index }: PropertyCardProps) {
       className="group cursor-pointer bg-surface-card rounded-2xl overflow-hidden shadow-card border border-gray-100 hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-300"
     >
       {/* Image */}
-      <div className="relative h-48 overflow-hidden bg-surface-muted">
+      <div className="relative h-44 overflow-hidden bg-surface-muted">
         <img
           src={imageUrl}
           alt={property.title}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
         />
+
+        {soldBadge && (
+          <span className="absolute left-[-52px] top-4 w-40 -rotate-45 bg-rose-500 text-white text-[11px] font-bold uppercase tracking-wide text-center py-1 shadow-md">
+            {soldBadge}
+          </span>
+        )}
 
         {/* Operation badge */}
         {property.operation && (
@@ -143,79 +110,7 @@ export function PropertyCard({ property, onClick, index }: PropertyCardProps) {
         <div className="font-display font-bold text-xl text-ink tracking-tight">
           {formatPrice(property.price?.amount, property.price?.currency)}
         </div>
-        {conditionLabel && (
-          <span className="inline-flex w-fit rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
-            {conditionLabel}
-          </span>
-        )}
-        {pricePerM2Total && (
-          <div className="text-xs text-ink-muted">
-            {pricePerM2Total} / m² total
-          </div>
-        )}
-        {pricePerM2Covered && (
-          <div className="text-xs text-ink-muted">
-            {pricePerM2Covered} / m² cubierto
-          </div>
-        )}
-        {expensesLabel && (
-          <div className="text-xs text-ink-muted">
-            Expensas: {expensesLabel}
-          </div>
-        )}
-        {publishedLabel && <div className="text-xs text-ink-faint">{publishedLabel}</div>}
-        {/* Location */}
-        <div className="flex items-center gap-1.5 text-sm text-ink-muted">
-          <MapPin className="h-3.5 w-3.5 text-brand-500 flex-shrink-0" />
-          <span className="truncate">
-            {property.location?.city}
-            {property.location?.locality ? `, ${property.location.locality}` : ''}
-          </span>
-        </div>
 
-        {/* Specs */}
-        <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm text-ink-muted">
-          {property.specs?.totalArea && (
-            <div className="flex items-center gap-1.5">
-              <Maximize2 className="h-3.5 w-3.5 text-brand-400" />
-              <span>{property.specs.totalArea} m²</span>
-            </div>
-          )}
-          {property.specs?.bedrooms && (
-            <div className="flex items-center gap-1.5">
-              <BedDouble className="h-3.5 w-3.5 text-brand-400" />
-              <span>{property.specs.bedrooms} dorm.</span>
-            </div>
-          )}
-          {property.specs?.bathrooms && (
-            <div className="flex items-center gap-1.5">
-              <Bath className="h-3.5 w-3.5 text-brand-400" />
-              <span>{property.specs.bathrooms} baños</span>
-            </div>
-          )}
-          {property.specs?.parking && (
-            <div className="flex items-center gap-1.5">
-              <CarFront className="h-3.5 w-3.5 text-brand-400" />
-              <span>{property.specs.parking} coch.</span>
-            </div>
-          )}
-        </div>
-
-        {/* Publisher */}
-        <div className="pt-3 border-t border-gray-100 text-xs text-ink-muted">
-          Por <span className="font-medium text-ink">{publisherName}</span>
-          {property.sourceUrl && (
-            <a
-              href={property.sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(event) => event.stopPropagation()}
-              className="ml-2 text-brand-500 hover:text-brand-600 font-medium"
-            >
-              Ver publicación
-            </a>
-          )}
-        </div>
       </div>
     </motion.article>
   );

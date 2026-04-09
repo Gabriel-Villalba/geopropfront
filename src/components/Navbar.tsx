@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+﻿import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { LogIn, LogOut, Users, LayoutDashboard, Bell, Heart } from 'lucide-react';
 import { useNotifications } from '../contexts/NotificationsContext';
@@ -7,6 +7,7 @@ export function Navbar() {
   const { user, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { unreadCount } = useNotifications();
+  const canExternalSearch = user?.plan === 'INMOBILIARIA' || user?.plan === 'BROKER';
 
   const handleLogout = () => {
     logout();
@@ -67,6 +68,12 @@ export function Navbar() {
                   <span className="hidden sm:inline">Panel</span>
                 </button>
 
+                {canExternalSearch && (
+                  <button onClick={() => navigate('/busqueda-externa')} className="btn-ghost">
+                    <span className="hidden sm:inline">Búsqueda externa</span>
+                  </button>
+                )}
+
                 <button
                   onClick={() => navigate('/panel/notifications')}
                   className="btn-ghost relative"
@@ -118,3 +125,5 @@ export function Navbar() {
     </nav>
   );
 }
+
+

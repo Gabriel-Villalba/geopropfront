@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+﻿import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
 import L from 'leaflet';
@@ -9,7 +9,7 @@ import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 import {
   Bath, BedDouble, CalendarClock, CarFront, ChevronLeft, ChevronRight,
   Home, LandPlot, LayoutGrid, MapPin, Maximize2, MessageCircle,
-  ArrowLeft, Send, User, Mail, ChevronDown, ChevronUp, BadgeCheck, Eye, Wallet, Heart,
+  ArrowLeft, Send, User, Mail, ChevronDown, ChevronUp, BadgeCheck, Eye, Wallet, Heart, Instagram,
 } from 'lucide-react';
 import { Navbar } from '../components';
 
@@ -33,7 +33,7 @@ const defaultLeafletIcon = L.icon({
   popupAnchor: [1, -34],
   shadowSize: [41, 41],
 });
-/* ── helpers ── */
+/* — helpers — */
 const formatPrice = (amount?: number | null, currency?: string | null) => {
   if (!amount || !currency) return 'Consultar precio';
   return `${currency} ${amount.toLocaleString('es-AR')}`;
@@ -76,7 +76,7 @@ const formatPricePerM2 = (amount?: number | null, area?: number | null, currency
   return `${currency} ${Math.round(amount / area).toLocaleString('es-AR')}`;
 };
 
-/* ── contact form state ── */
+/* — contact form state — */
 interface ContactForm {
   name: string;
   email: string;
@@ -100,7 +100,7 @@ export default function PropertyDetailPage() {
             <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-8 text-center">
               <h1 className="font-display font-semibold text-xl text-ink">No encontramos esa propiedad</h1>
               <p className="mt-2 text-sm text-ink-muted">
-                {id ? `La propiedad ${id} no estÃ¡ disponible o expirÃ³.` : 'VolvÃ© al listado para buscar otra opciÃ³n.'}
+                {id ? `La propiedad ${id} no está disponible o expiró.` : 'Volvé al listado para buscar otra opción.'}
               </p>
               <button
                 onClick={() => navigate('/dashboard')}
@@ -141,6 +141,7 @@ export default function PropertyDetailPage() {
 
   /* publisher */
   const publisherName = property.publisher?.name ?? 'Sin especificar';
+  const instagramUrl = property.publisher?.instagramUrl ?? null;
   const conditionLabel = formatCondition(property.condition);
   const expensesLabel =
     property.operation === 'alquiler'
@@ -243,7 +244,7 @@ export default function PropertyDetailPage() {
       <main className="flex-1 pt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-          {/* ── Back ── */}
+          {/* â”€â”€ Back â”€â”€ */}
           <button
             onClick={() => navigate(-1)}
             className="mb-6 inline-flex items-center gap-2 text-sm text-ink-muted hover:text-ink transition-colors font-medium"
@@ -252,7 +253,7 @@ export default function PropertyDetailPage() {
             Volver al listado
           </button>
 
-          {/* ── Breadcrumb title ── */}
+          {/* â”€â”€ Breadcrumb title â”€â”€ */}
           <div className="mb-8">
             <div className="flex flex-wrap gap-2 mb-3">
               {property.operation && (
@@ -283,10 +284,10 @@ export default function PropertyDetailPage() {
             </div>
           </div>
 
-          {/* ── Main grid: gallery + sidebar ── */}
+          {/* â”€â”€ Main grid: gallery + sidebar â”€â”€ */}
           <div className="grid lg:grid-cols-3 gap-8">
 
-            {/* Left col — gallery + specs + description */}
+            {/* Left col â€” gallery + specs + description */}
             <div className="lg:col-span-2 space-y-6">
 
               {/* Gallery */}
@@ -378,7 +379,7 @@ export default function PropertyDetailPage() {
               )}
             </div>
 
-            {/* Right col — price + publisher + contact form */}
+            {/* Right col â€” price + publisher + contact form */}
             <div className="space-y-5">
 
               {/* Price card */}
@@ -432,7 +433,20 @@ export default function PropertyDetailPage() {
 
                 <div className="mt-5 pt-5 border-t border-gray-100">
                   <p className="text-xs text-ink-muted mb-1">Publicado por</p>
-                  <p className="font-semibold text-sm text-ink">{publisherName}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold text-sm text-ink">{publisherName}</p>
+                    {instagramUrl && (
+                      <a
+                        href={instagramUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-xs text-brand-600 hover:text-brand-700"
+                      >
+                        <Instagram className="h-3.5 w-3.5" />
+                        Instagram
+                      </a>
+                    )}
+                  </div>
                 </div>
 
                 {whatsappLink && (
@@ -464,7 +478,7 @@ export default function PropertyDetailPage() {
                     <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center">
                       <Send className="w-5 h-5 text-emerald-500" />
                     </div>
-                    <p className="font-semibold text-sm text-ink">¡Mensaje enviado!</p>
+                    <p className="font-semibold text-sm text-ink">Â¡Mensaje enviado!</p>
                     <p className="text-xs text-ink-muted">El anunciante se pondrá en contacto a la brevedad.</p>
                     <button onClick={() => setSent(false)} className="text-xs text-brand-500 hover:text-brand-600 font-medium mt-1">
                       Enviar otra consulta
@@ -530,7 +544,7 @@ export default function PropertyDetailPage() {
           {hasMap && mapCenter && (
             <div className="mt-8 bg-white rounded-2xl border border-gray-100 shadow-card overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-100">
-                <h2 className="text-xs font-semibold uppercase tracking-widest text-ink-muted">UbicaciÃ³n aproximada</h2>
+                <h2 className="text-xs font-semibold uppercase tracking-widest text-ink-muted">UbicaciÃƒÂ³n aproximada</h2>
               </div>
               <div className="h-72 w-full">
                 <MapContainer center={mapCenter} zoom={14} scrollWheelZoom={false} className="h-full w-full">
@@ -553,6 +567,7 @@ export default function PropertyDetailPage() {
     </div>
   );
 }
+
 
 
 

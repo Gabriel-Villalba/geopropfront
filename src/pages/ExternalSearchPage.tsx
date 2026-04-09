@@ -178,18 +178,31 @@ export default function ExternalSearchPage() {
                   </h2>
                   <span className="text-sm text-ink-muted">Mostrando {visibleItems.length}</span>
                 </div>
-                <div key={currentPage} className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                <div key={currentPage} className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {visibleItems.map((property, index) => (
-                    <PropertyCard
-                      key={`${property.id}-${index}`}
-                      property={property}
-                      index={index}
-                      onClick={() => {
-                        if (property.sourceUrl) {
-                          window.open(property.sourceUrl, '_blank', 'noopener,noreferrer');
-                        }
-                      }}
-                    />
+                    <div key={`${property.id}-${index}`} className="flex flex-col gap-3">
+                      <PropertyCard
+                        property={property}
+                        index={index}
+                        onClick={() => {
+                          if (property.sourceUrl) {
+                            window.open(property.sourceUrl, '_blank', 'noopener,noreferrer');
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (property.sourceUrl) {
+                            window.open(property.sourceUrl, '_blank', 'noopener,noreferrer');
+                          }
+                        }}
+                        disabled={!property.sourceUrl}
+                        className="btn-ghost justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Ir a publicación
+                      </button>
+                    </div>
                   ))}
                 </div>
                 <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={goToPage} />

@@ -14,7 +14,7 @@ export default function FavoritesPage() {
       <main className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
         <header className="py-10 sm:py-12">
           <h1 className="font-display font-bold text-3xl text-ink tracking-tight">Favoritos</h1>
-          <p className="mt-2 text-sm text-ink-muted">GuardÃ¡ propiedades para volver cuando quieras.</p>
+          <p className="mt-2 text-sm text-ink-muted">Guardá propiedades para volver cuando quieras.</p>
         </header>
 
         {favorites.length === 0 ? (
@@ -24,7 +24,7 @@ export default function FavoritesPage() {
             </div>
             <h3 className="font-display font-semibold text-lg text-ink">Sin favoritos</h3>
             <p className="mt-2 text-sm text-ink-muted max-w-xs">
-              ExplorÃ¡ el listado y guardÃ¡ propiedades para verlas mÃ¡s tarde.
+              Explorá el listado y guardá propiedades para verlas más tarde.
             </p>
             <button
               type="button"
@@ -35,7 +35,7 @@ export default function FavoritesPage() {
             </button>
           </div>
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {favorites.map((property, index) => (
               <PropertyCard
                 key={property.id}

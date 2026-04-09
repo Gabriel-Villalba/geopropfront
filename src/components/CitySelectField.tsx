@@ -21,8 +21,8 @@ export function CitySelectField({
   error,
   onRetry,
   onChange,
-  selectClassName = 'border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500',
-  labelClassName = 'text-sm font-medium text-slate-700',
+  selectClassName = 'select-base',
+  labelClassName = 'text-sm font-medium text-ink',
   disabled,
 }: CitySelectFieldProps) {
   const isDisabled = Boolean(disabled) || isLoading || Boolean(error);
@@ -39,7 +39,7 @@ export function CitySelectField({
           onChange(nextValue, selectedCity);
         }}
         disabled={isDisabled}
-        className={`${selectClassName} disabled:cursor-not-allowed disabled:bg-slate-100`}
+        className={`${selectClassName} disabled:cursor-not-allowed disabled:bg-surface-muted`}
       >
         <option value="">
           {isLoading ? 'Cargando ciudades...' : 'Seleccionar ciudad o localidad'}

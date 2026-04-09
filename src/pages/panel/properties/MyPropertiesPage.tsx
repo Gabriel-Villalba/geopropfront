@@ -1,5 +1,5 @@
-import { ArrowLeft, Heart, MessageCircle, Plus, TrendingUp } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { ArrowLeft, Heart, MessageCircle, Plus, TrendingUp, UploadCloud, FileSpreadsheet, FileText, CheckCircle2 } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type DragEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Navbar } from '../../../components';
 import { PropertyComparator, ZonePriceStats } from '../../../components';
@@ -7,9 +7,11 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { ExpiringPropertiesAlert, RenewListingModal } from '../../../features/listings';
 import { useFavorites } from '../../../hooks/useFavorites';
 import { useOwnerPanel } from '../../../hooks/useOwnerPanel';
-import { meApi } from '../../../services/api';
-import type { PropertyPerformanceMetric, ZonePriceStat } from '../../../types';
+import { importApi, meApi } from '../../../services/api';
+import type { BulkImportSummary, PropertyPerformanceMetric, ZonePriceStat } from '../../../types';
 import type { RenewListingPayload } from '../../../types';
+import Papa from 'papaparse';
+import * as XLSX from 'xlsx';
 
 function statusBadge(status: string): string {
   if (status === 'active' || status === 'approved') return 'bg-emerald-50 text-emerald-700 border-emerald-200';
@@ -36,6 +38,67 @@ type PanelImageItem = {
   order?: number;
   isPrimary?: boolean;
 };
+
+const IMPORT_FIELDS = [
+  { key: 'title', label: 'Titulo' },
+  { key: 'price', label: 'Precio' },
+  { key: 'operation', label: 'Operacion' },
+  { key: 'type', label: 'Tipo' },
+  { key: 'city', label: 'Ciudad' },
+  { key: 'province', label: 'Provincia' },
+  { key: 'address', label: 'Direccion' },
+  { key: 'bedrooms', label: 'Dormitorios' },
+  { key: 'bathrooms', label: 'Baños' },
+  { key: 'totalArea', label: 'm2 total' },
+  { key: 'coveredArea', label: 'm2 cubiertos' },
+  { key: 'images', label: 'Imagenes (URLs)' },
+  { key: 'publisherName', label: 'Inmobiliaria' },
+  { key: 'publisherPhone', label: 'Telefono' },
+  { key: 'sourceUrl', label: 'URL origen' },
+  { key: 'description', label: 'Descripcion' },
+];
+
+const HEADER_ALIASES: Record<string, string[]> = {
+  title: ['titulo', 'title', 'propiedad', 'nombre'],
+  price: ['precio', 'price', 'importe', 'valor'],
+  operation: ['operacion', 'operation', 'tipo_operacion'],
+  type: ['tipo', 'type', 'tipo_propiedad', 'property_type'],
+  city: ['ciudad', 'city', 'localidad', 'municipio'],
+  province: ['provincia', 'province', 'state'],
+  address: ['direccion', 'address', 'domicilio'],
+  bedrooms: ['dormitorios', 'bedrooms', 'habitaciones'],
+  bathrooms: ['banos', 'baños', 'bathrooms'],
+  totalArea: ['sup_total', 'superficie_total', 'area_total', 'm2_total'],
+  coveredArea: ['sup_cubierta', 'superficie_cubierta', 'area_cubierta', 'm2_cubiertos'],
+  images: ['imagenes', 'fotos', 'images', 'images_urls'],
+  publisherName: ['inmobiliaria', 'publisher', 'publisher_name', 'agencia'],
+  publisherPhone: ['telefono', 'phone', 'publisher_phone'],
+  sourceUrl: ['url', 'link', 'source', 'source_url'],
+  description: ['descripcion', 'description', 'detalle', 'detalles'],
+};
+
+function normalizeHeader(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '');
+}
+
+function buildAutoMapping(headers: string[]) {
+  const mapping: Record<string, string> = {};
+
+  IMPORT_FIELDS.forEach((field) => {
+    const aliases = HEADER_ALIASES[field.key] ?? [];
+    const match = headers.find((header) =>
+      aliases.some((alias) => normalizeHeader(alias) === normalizeHeader(header)),
+    );
+    if (match) mapping[field.key] = match;
+  });
+
+  return mapping;
+}
 
 function normalizePanelImages(images: unknown): Array<PanelImageItem & { canDelete: boolean }> {
   if (!Array.isArray(images)) return [];
@@ -72,6 +135,250 @@ function normalizePanelImages(images: unknown): Array<PanelImageItem & { canDele
       };
     })
     .filter((image) => Boolean(image.imageUrl));
+}
+
+function BulkImportPanel({ onImported }: { onImported: () => void }) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [headers, setHeaders] = useState<string[]>([]);
+  const [rows, setRows] = useState<Record<string, unknown>[]>([]);
+  const [mapping, setMapping] = useState<Record<string, string>>({});
+  const [status, setStatus] = useState<'idle' | 'parsing' | 'ready' | 'importing' | 'done' | 'error'>('idle');
+  const [message, setMessage] = useState<string | null>(null);
+  const [summary, setSummary] = useState<BulkImportSummary | null>(null);
+
+  const resetState = () => {
+    setFile(null);
+    setHeaders([]);
+    setRows([]);
+    setMapping({});
+    setStatus('idle');
+    setMessage(null);
+    setSummary(null);
+  };
+
+  const parseFile = async (selected: File) => {
+    setStatus('parsing');
+    setMessage(null);
+    setSummary(null);
+
+    const isCsv =
+      selected.name.toLowerCase().endsWith('.csv') ||
+      selected.type.includes('csv');
+
+    try {
+      if (isCsv) {
+        Papa.parse(selected, {
+          header: true,
+          skipEmptyLines: true,
+          complete: (results) => {
+            const parsedRows = (results.data ?? []) as Record<string, unknown>[];
+            const parsedHeaders = results.meta?.fields ?? Object.keys(parsedRows[0] ?? {});
+            setHeaders(parsedHeaders);
+            setRows(parsedRows.slice(0, 5));
+            setMapping(buildAutoMapping(parsedHeaders));
+            setFile(selected);
+            setStatus('ready');
+          },
+          error: (error) => {
+            setStatus('error');
+            setMessage(error.message || 'No se pudo leer el CSV.');
+          },
+        });
+      } else {
+        const buffer = await selected.arrayBuffer();
+        const workbook = XLSX.read(buffer, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const parsedRows = XLSX.utils.sheet_to_json(sheet, { defval: '' }) as Record<string, unknown>[];
+        const parsedHeaders = parsedRows.length ? Object.keys(parsedRows[0]) : [];
+        setHeaders(parsedHeaders);
+        setRows(parsedRows.slice(0, 5));
+        setMapping(buildAutoMapping(parsedHeaders));
+        setFile(selected);
+        setStatus('ready');
+      }
+    } catch (error) {
+      setStatus('error');
+      setMessage((error as Error).message || 'No se pudo leer el archivo.');
+    }
+  };
+
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const selected = event.target.files?.[0];
+    if (!selected) return;
+    void parseFile(selected);
+  };
+
+  const handleDrop = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    const dropped = event.dataTransfer.files?.[0];
+    if (!dropped) return;
+    void parseFile(dropped);
+  };
+
+  const handleImport = async () => {
+    if (!file) return;
+    setStatus('importing');
+    setMessage(null);
+
+    try {
+      const payloadMapping = Object.fromEntries(
+        Object.entries(mapping).filter(([, value]) => Boolean(value)),
+      );
+      const result = await importApi.bulkImport({ file, mapping: payloadMapping });
+      setSummary(result);
+      setStatus('done');
+      onImported();
+    } catch (error) {
+      setStatus('error');
+      setMessage((error as Error).message || 'No se pudo importar el archivo.');
+    }
+  };
+
+  return (
+    <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold text-slate-900">Importar CSV/Excel</p>
+          <p className="text-xs text-slate-500">Arrastra un archivo o selecciona uno para previsualizar.</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+        >
+          <UploadCloud className="h-4 w-4" />
+          Elegir archivo
+        </button>
+      </div>
+
+      <div
+        onDragOver={(event) => event.preventDefault()}
+        onDrop={handleDrop}
+        className="mt-3 flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center text-xs text-slate-500"
+      >
+        <div className="flex items-center gap-2 text-slate-600">
+          <FileSpreadsheet className="h-4 w-4" />
+          <FileText className="h-4 w-4" />
+          <span>{file ? file.name : 'CSV o Excel (XLSX)'}</span>
+        </div>
+        <p className="mt-1 text-[11px]">Hasta 5 filas de preview. Mapping editable antes de confirmar.</p>
+      </div>
+
+      <input
+        ref={inputRef}
+        type="file"
+        accept=".csv,.xlsx,.xls"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+
+      {status === 'parsing' && (
+        <p className="mt-3 text-xs text-slate-500">Leyendo archivo...</p>
+      )}
+
+      {message && (
+        <div className="mt-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
+          {message}
+        </div>
+      )}
+
+      {status !== 'idle' && headers.length > 0 && (
+        <div className="mt-4 space-y-4">
+          <div className="grid gap-3 sm:grid-cols-2">
+            {IMPORT_FIELDS.map((field) => (
+              <label key={field.key} className="text-xs text-slate-600">
+                {field.label}
+                <select
+                  value={mapping[field.key] ?? ''}
+                  onChange={(event) =>
+                    setMapping((prev) => ({
+                      ...prev,
+                      [field.key]: event.target.value,
+                    }))
+                  }
+                  className="mt-1 w-full rounded-md border border-slate-200 px-2 py-1.5 text-xs text-slate-700"
+                >
+                  <option value="">Sin asignar</option>
+                  {headers.map((header) => (
+                    <option key={`${field.key}-${header}`} value={header}>
+                      {header}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ))}
+          </div>
+
+          {rows.length > 0 && (
+            <div className="overflow-x-auto rounded-xl border border-slate-200">
+              <table className="min-w-[600px] w-full text-xs">
+                <thead className="bg-slate-100 text-slate-500">
+                  <tr>
+                    {headers.map((header) => (
+                      <th key={header} className="px-3 py-2 text-left font-semibold">
+                        {header}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="text-slate-700">
+                  {rows.map((row, index) => (
+                    <tr key={`row-${index}`} className="border-t border-slate-200">
+                      {headers.map((header) => (
+                        <td key={`${index}-${header}`} className="px-3 py-2">
+                          {String(row[header] ?? '')}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={handleImport}
+              disabled={status === 'importing' || !file}
+              className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:bg-emerald-300"
+            >
+              <UploadCloud className="h-4 w-4" />
+              {status === 'importing' ? 'Importando...' : 'Confirmar importacion'}
+            </button>
+            <button
+              type="button"
+              onClick={resetState}
+              className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
+              Limpiar
+            </button>
+          </div>
+
+          {summary && (
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+              <div className="flex items-center gap-2 font-semibold">
+                <CheckCircle2 className="h-4 w-4" />
+                Importacion completa
+              </div>
+              <p className="mt-1">Total: {summary.total} | Creados: {summary.creados} | Actualizados: {summary.actualizados}</p>
+              {summary.errores?.length > 0 && (
+                <ul className="mt-2 list-disc pl-4">
+                  {summary.errores.slice(0, 5).map((error, index) => (
+                    <li key={`${error.row}-${index}`}>
+                      Fila {error.row}: {error.message}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function MyPropertiesPage() {
@@ -262,7 +569,7 @@ export default function MyPropertiesPage() {
             <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
               <p className="font-semibold">Integraciones para {plan}</p>
               <p className="mt-1 text-xs text-blue-800">
-                Puedes conectar tu sistema o importar un CSV/Excel. Esta demo simula el flujo hasta que el backend lo habilite.
+                Puedes conectar tu sistema o importar un CSV/Excel con mapeo de columnas.
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <button
@@ -272,15 +579,14 @@ export default function MyPropertiesPage() {
                 >
                   Conectar sistema
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setIntegrationMessage('Importacion CSV simulada. En breve podras subir archivos reales.')}
-                  className="rounded-lg border border-blue-300 bg-white px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-100"
-                >
-                  Importar CSV/Excel
-                </button>
               </div>
               {integrationMessage && <p className="mt-2 text-xs text-blue-800">{integrationMessage}</p>}
+
+              <BulkImportPanel
+                onImported={() => {
+                  void loadPanel();
+                }}
+              />
             </div>
           )}
 

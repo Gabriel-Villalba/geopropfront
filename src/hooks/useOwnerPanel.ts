@@ -41,6 +41,7 @@ export function useOwnerPanel() {
         name: me.name,
         email: me.email,
         phone: me.phone ?? null,
+        instagramUrl: me.instagramUrl ?? null,
         active: Boolean(me.active),
         plan: me.plan ?? 'FREE',
         planExpiresAt: me.planExpiresAt,
@@ -65,6 +66,7 @@ export function useOwnerPanel() {
       name: string;
       email: string;
       phone?: string | null;
+      instagramUrl?: string | null;
       password?: string;
       plan?: UserPlan;
       planExpiresAt?: string | null;
@@ -82,6 +84,7 @@ export function useOwnerPanel() {
           name: payload.name,
           email: payload.email,
           phone: payload.phone ?? null,
+          instagramUrl: payload.instagramUrl ?? null,
         };
 
         if (payload.password) {
@@ -128,6 +131,7 @@ export function useOwnerPanel() {
           name: me.name,
           email: me.email,
           phone: me.phone ?? null,
+          instagramUrl: me.instagramUrl ?? null,
           active: Boolean(me.active),
           plan: me.plan ?? 'FREE',
           planExpiresAt: me.planExpiresAt,

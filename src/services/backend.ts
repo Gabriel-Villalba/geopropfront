@@ -54,6 +54,8 @@ export interface BackendProperty {
   createdAt?: string | null;
   publishedAt: string | null;
   deactivatedAt: string | null;
+  soldAt?: string | null;
+  soldType?: 'sale' | 'rent' | null;
   city?: BackendCity | null;
   images?: BackendPropertyImage[];
   listing?: {
@@ -88,6 +90,7 @@ export interface BackendMe {
   role: string | null;
   name: string;
   email: string;
+  instagramUrl?: string | null;
   phone?: string | null;
   active: boolean;
   plan: 'FREE' | 'INMOBILIARIA' | 'BROKER';
@@ -198,6 +201,8 @@ export function mapBackendPropertyToUi(property: BackendProperty): Property {
     },
     image: primaryImage,
     images: imageUrls,
+    soldAt: property.soldAt ?? null,
+    soldType: property.soldType ?? null,
     publisher: {
       type: property.ownerType,
       name: property.contactName ?? 'GeoProp',

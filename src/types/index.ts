@@ -2,6 +2,7 @@ export interface Publisher {
   type: 'inmobiliaria' | 'particular';
   name: string;
   phone: string | null;
+  instagramUrl?: string | null;
 }
 
 export interface Province {
@@ -69,6 +70,8 @@ export interface Property {
   condition?: 'a_estrenar' | 'usado' | 'a_refaccionar' | null;
   createdAt?: string | null;
   publishedAt?: string | null;
+  soldAt?: string | null;
+  soldType?: 'sale' | 'rent' | null;
   views?: number | null;
 }
 
@@ -143,6 +146,7 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  instagramUrl?: string | null;
   phone?: string | null;
   clientId?: string;
   roleId?: string;
@@ -174,6 +178,7 @@ export interface UserRecord {
   name: string;
   email: string;
   phone?: string | null;
+  instagramUrl?: string | null;
   roleId: string;
   clientId: string;
   active: boolean;
@@ -207,6 +212,7 @@ export interface UpdateUserPayload {
   active?: boolean;
   password?: string;
   phone?: string | null;
+  instagramUrl?: string | null;
   plan?: UserPlan | null;
   planExpiresAt?: string | null;
   subscriptionStatus?: string | null;
@@ -230,6 +236,18 @@ export interface PaginatedResponse<T> {
   data: T;
   pagination: PaginationMeta;
   error: string | null;
+}
+
+export interface BulkImportError {
+  row: number;
+  message: string;
+}
+
+export interface BulkImportSummary {
+  total: number;
+  creados: number;
+  actualizados: number;
+  errores: BulkImportError[];
 }
 
 export interface DashboardSummary {

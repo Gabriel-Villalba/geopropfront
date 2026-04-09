@@ -1,4 +1,4 @@
-import { Bell, Building2, ChevronRight, Clock, MessageCircle, UserCog, Sparkles, Plus } from 'lucide-react';
+﻿import { Bell, Building2, ChevronRight, Clock, MessageCircle, UserCog, Sparkles, Plus } from 'lucide-react';
 import type { ComponentType } from 'react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -15,9 +15,10 @@ interface PanelActionCard {
   icon: ComponentType<{ className?: string }>;
   to: string;
   accent: string;
+  badge?: string;
 }
 
-const cards: PanelActionCard[] = [
+const baseCards: PanelActionCard[] = [
   {
     id: 'properties',
     title: 'Mis propiedades',
@@ -65,6 +66,21 @@ export default function PanelDashboard() {
   const { user } = useAuth();
   const { unreadCount } = useNotifications();
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
+  const canExternalSearch = user?.plan === 'INMOBILIARIA' || user?.plan === 'BROKER';
+  const cards = canExternalSearch
+    ? [
+        ...baseCards,
+        {
+          id: 'external-search',
+          title: 'Búsqueda externa',
+          description: 'Explorá propiedades de otros portales desde GeoProp.',
+          icon: Sparkles,
+          to: '/busqueda-externa',
+          accent: 'bg-rose-50 text-rose-600',
+          badge: 'BROKER',
+        },
+      ]
+    : baseCards;
 
   useEffect(() => {
     let active = true;
@@ -87,7 +103,7 @@ export default function PanelDashboard() {
 
       <main className="mx-auto w-full max-w-4xl px-4 pb-16 sm:px-6 pt-10 space-y-6">
 
-        {/* ── 1. Profile banner ── */}
+        {/* — 1. Profile banner — */}
         <div className="bg-ink rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center gap-5">
           <div className="w-14 h-14 rounded-2xl bg-brand-500 flex items-center justify-center font-display font-bold text-xl text-white flex-shrink-0">
             {getInitials(user?.name)}
@@ -111,7 +127,7 @@ export default function PanelDashboard() {
           </button>
         </div>
 
-        {/* ── 2. Stats ── */}
+        {/* — 2. Stats — */}
         {summary && (
           <div className="grid grid-cols-3 gap-3">
             <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-5">
@@ -140,7 +156,7 @@ export default function PanelDashboard() {
           </div>
         )}
 
-        {/* ── 3. Action cards ── */}
+        {/* — 3. Action cards — */}
         <div className="grid gap-4 sm:grid-cols-2">
           {cards.map((card) => {
             const Icon = card.icon;
@@ -160,7 +176,14 @@ export default function PanelDashboard() {
                   <div className={`p-2.5 rounded-xl ${card.accent}`}>
                     <Icon className="h-5 w-5" />
                   </div>
-                  <ChevronRight className="h-4 w-4 text-ink-faint mt-0.5 group-hover:text-ink-muted group-hover:translate-x-0.5 transition-all" />
+                  <div className="flex items-center gap-2">
+                    {card.badge && (
+                      <span className="rounded-full bg-ink/5 text-ink text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5">
+                        {card.badge}
+                      </span>
+                    )}
+                    <ChevronRight className="h-4 w-4 text-ink-faint mt-0.5 group-hover:text-ink-muted group-hover:translate-x-0.5 transition-all" />
+                  </div>
                 </div>
                 <h2 className="mt-4 font-display font-semibold text-base text-ink">{card.title}</h2>
                 <p className="mt-1.5 text-sm text-ink-muted leading-relaxed">{card.description}</p>
@@ -173,3 +196,4 @@ export default function PanelDashboard() {
     </div>
   );
 }
+

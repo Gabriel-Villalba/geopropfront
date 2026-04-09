@@ -24,6 +24,7 @@ import type {
   UserRecord,
   ZonePriceStat,
   ApiResponse,
+  BulkImportSummary,
 } from '../types';
 import {
   type BackendAlert,
@@ -313,6 +314,7 @@ export const meApi = {
         active: me.active,
         name: me.name,
         email: me.email,
+        instagramUrl: me.instagramUrl ?? null,
         phone: me.phone ?? null,
         plan: me.plan,
         planExpiresAt: me.planExpiresAt,
@@ -591,6 +593,19 @@ export const alertApi = {
     await requestWithRetry(() =>
       api.patch<BackendApiResponse<{ id: string }>>(`/alerts/${id}/deactivate`),
     );
+  },
+};
+
+export const importApi = {
+  bulkImport: async (payload: { file: File; mapping: Record<string, string | null> }): Promise<BulkImportSummary> => {
+    const formData = new FormData();
+    formData.append('file', payload.file);
+    formData.append('mapping', JSON.stringify(payload.mapping ?? {}));
+
+    const response = await requestWithRetry(() =>
+      api.post<BackendApiResponse<BulkImportSummary>>('/import/bulk', formData),
+    );
+    return extractApiData(response);
   },
 };
 
