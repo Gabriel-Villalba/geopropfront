@@ -372,7 +372,7 @@ export function Filters({
         </div>
 
         {/* Búsqueda por texto + micrófono */}
-        <div className="relative flex items-center gap-1">
+        <div className="relative flex flex-wrap items-center gap-1">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-brand-400 pointer-events-none" />
             <input
@@ -419,7 +419,7 @@ export function Filters({
             </button>
           )}
 
-          <div className={`ml-1 hidden sm:flex items-center gap-2 rounded-full px-3 py-2 text-xs font-medium ${speechStatus.tone}`}>
+          <div className={`w-full sm:w-auto sm:ml-1 flex items-center gap-2 rounded-full px-3 py-2 text-xs font-medium ${speechStatus.tone}`}>
             <span className={`h-2 w-2 rounded-full ${speechStatus.dot}`} />
             <span>{speechStatus.label}</span>
           </div>
