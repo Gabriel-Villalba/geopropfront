@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download, Printer } from 'lucide-react';
 import { Filters, Navbar, Pagination, PropertyCard } from '../components';
 import { useAuth } from '../contexts/AuthContext';
-import { useFilters } from '../hooks/useFilters';
+import { buildPropertyFilters, type FiltersFormState, useFilters } from '../hooks/useFilters';
 import { useLocations } from '../hooks/useLocations';
 import { usePagination } from '../hooks/usePagination';
 import { useProperties } from '../hooks/useProperties';
@@ -51,7 +51,7 @@ export default function ExternalSearchPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const isAllowed = user?.plan === 'INMOBILIARIA' || user?.plan === 'BROKER';
-  const { filters, params, updateFilter, resetFilters } = useFilters();
+  const { filters, params, updateFilter, replaceFilters, resetFilters } = useFilters();
   const { provinces, cities, isLoadingProvinces, isLoadingCities, citiesError, reloadCities } = useLocations(filters.province);
   const { properties, isLoading, isRetrying, error, hasFetched, fetchProperties } = useProperties();
   const { visibleItems, currentPage, totalPages, totalCount, goToPage } = usePagination(properties, 6);
@@ -61,16 +61,18 @@ export default function ExternalSearchPage() {
     [filters.province, provinces],
   );
 
-  const handleSubmit = useCallback(async () => {
+  const handleSubmit = useCallback(async (nextFilters?: FiltersFormState) => {
     if (!isAllowed) return;
+    const effectiveFilters = nextFilters ?? filters;
+    const selectedProvinceName = provinces.find((province) => province.slug === effectiveFilters.province)?.name;
     const externalParams = {
-      ...params,
+      ...buildPropertyFilters(effectiveFilters),
       external: 'ml',
-      province: selectedProvince?.name,
-      city: filters.city || undefined,
+      province: selectedProvinceName,
+      city: effectiveFilters.city || undefined,
     };
     await fetchProperties(externalParams);
-  }, [fetchProperties, filters.city, isAllowed, params, selectedProvince]);
+  }, [fetchProperties, filters, isAllowed, provinces]);
 
   const handleReset = useCallback(() => {
     resetFilters();
@@ -143,6 +145,7 @@ export default function ExternalSearchPage() {
         <Filters
           filters={filters}
           onChange={updateFilter}
+          onApplyFilters={replaceFilters}
           onSubmit={handleSubmit}
           onReset={handleReset}
           isLoading={isLoading}

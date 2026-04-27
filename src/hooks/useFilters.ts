@@ -4,7 +4,7 @@ import type { PropertyFilters } from '../types';
 export interface FiltersFormState {
   province: string;
   city: string;
-  operation?: 'venta' | 'alquiler' | null;
+  operation?: 'venta' | 'alquiler' | '' | null;
   type: 'casa' | 'departamento' | 'lote' | 'comercial' | 'galpon-deposito' | '';
   sizeCategory: string;
   minBedrooms: string;
@@ -19,7 +19,7 @@ export interface FiltersFormState {
   publisherType: string;
 }
 
-const DEFAULT_FILTERS: FiltersFormState = {
+export const DEFAULT_FILTERS: FiltersFormState = {
   province: '',
   city: '',
   operation: null,
@@ -41,6 +41,28 @@ const parseNumber = (value: string) => (value.trim() === '' ? undefined : Number
 
 const isBedroomsAllowed = (type: FiltersFormState['type']) => type === 'casa' || type === 'departamento';
 
+export function buildPropertyFilters(filters: FiltersFormState): PropertyFilters {
+  const base: PropertyFilters = {
+    province: filters.province || undefined,
+    city: filters.city || undefined,
+    operation: filters.operation || undefined,
+    type: filters.type || undefined,
+    sizeCategory: (filters.sizeCategory as 'small' | 'medium' | 'large') || undefined,
+    search: filters.search || undefined,
+    sortBy: filters.sortBy || undefined,
+    order: filters.order || undefined,
+    minBedrooms: isBedroomsAllowed(filters.type) ? parseNumber(filters.minBedrooms) : undefined,
+    minPrice: parseNumber(filters.minPrice),
+    maxPrice: parseNumber(filters.maxPrice),
+    minParking: parseNumber(filters.minParking),
+    minArea: parseNumber(filters.minArea),
+    maxArea: parseNumber(filters.maxArea),
+    publisherType: filters.publisherType || undefined,
+  };
+
+  return Object.fromEntries(Object.entries(base).filter(([, value]) => value !== undefined)) as PropertyFilters;
+}
+
 export function useFilters(initialFilters = DEFAULT_FILTERS) {
   const [filters, setFilters] = useState<FiltersFormState>(initialFilters);
 
@@ -48,34 +70,19 @@ export function useFilters(initialFilters = DEFAULT_FILTERS) {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
+  const replaceFilters = (nextFilters: FiltersFormState) => {
+    setFilters(nextFilters);
+  };
+
   const resetFilters = () => setFilters(initialFilters);
 
-  const params = useMemo<PropertyFilters>(() => {
-    const base: PropertyFilters = {
-      province: filters.province || undefined,
-      city: filters.city || undefined,
-      operation: filters.operation || undefined,
-      type: filters.type || undefined,
-      sizeCategory: (filters.sizeCategory as 'small' | 'medium' | 'large') || undefined,
-      search: filters.search || undefined,
-      sortBy: filters.sortBy || undefined,
-      order: filters.order || undefined,
-      minBedrooms: isBedroomsAllowed(filters.type) ? parseNumber(filters.minBedrooms) : undefined,
-      minPrice: parseNumber(filters.minPrice),
-      maxPrice: parseNumber(filters.maxPrice),
-      minParking: parseNumber(filters.minParking),
-      minArea: parseNumber(filters.minArea),
-      maxArea: parseNumber(filters.maxArea),
-      publisherType: filters.publisherType || undefined,
-    };
-
-    return Object.fromEntries(Object.entries(base).filter(([, value]) => value !== undefined)) as PropertyFilters;
-  }, [filters]);
+  const params = useMemo<PropertyFilters>(() => buildPropertyFilters(filters), [filters]);
 
   return {
     filters,
     params,
     updateFilter,
+    replaceFilters,
     resetFilters,
   };
 }

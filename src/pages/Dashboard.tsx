@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Filters, Navbar, Pagination, PropertyCard } from '../components';
-import { useFilters } from '../hooks/useFilters';
+import { buildPropertyFilters, type FiltersFormState, useFilters } from '../hooks/useFilters';
 import { usePagination } from '../hooks/usePagination';
 import { useProperties } from '../hooks/useProperties';
 import { Heart, PackageOpen, Search, TrendingUp } from 'lucide-react';
@@ -10,7 +10,7 @@ import { useFavorites } from '../hooks/useFavorites';
 import { useAuth } from '../contexts/AuthContext';
 
 export function Dashboard() {
-  const { filters, params, updateFilter, resetFilters } = useFilters();
+  const { filters, params, updateFilter, replaceFilters, resetFilters } = useFilters();
   const { properties, isLoading, isRetrying, error, hasFetched, fetchProperties } = useProperties();
   const { visibleItems, currentPage, totalPages, totalCount, goToPage } = usePagination(properties, 6);
   const { favorites } = useFavorites();
@@ -23,9 +23,10 @@ export function Dashboard() {
     void fetchProperties(initialParamsRef.current);
   }, [fetchProperties]);
 
-  const handleSubmit = useCallback(async () => {
-    await fetchProperties(params);
-  }, [fetchProperties, params]);
+  const handleSubmit = useCallback(async (nextFilters?: FiltersFormState) => {
+    const effectiveFilters = nextFilters ?? filters;
+    await fetchProperties(buildPropertyFilters(effectiveFilters));
+  }, [fetchProperties, filters]);
 
   const handleReset = useCallback(() => {
     resetFilters();
@@ -69,7 +70,14 @@ export function Dashboard() {
         </header>
 
         {/* Filters */}
-        <Filters filters={filters} onChange={updateFilter} onSubmit={handleSubmit} onReset={handleReset} isLoading={isLoading} />
+        <Filters
+          filters={filters}
+          onChange={updateFilter}
+          onApplyFilters={replaceFilters}
+          onSubmit={handleSubmit}
+          onReset={handleReset}
+          isLoading={isLoading}
+        />
 
         {/* Error */}
         {error && (
