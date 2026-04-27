@@ -110,6 +110,7 @@ export function Filters({
   const [openDropdown, setOpenDropdown] = useState<DropdownType>(null);
   const [isSpeechSupported, setIsSpeechSupported] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [isSpeechBlocked, setIsSpeechBlocked] = useState(false);
   const [speechError, setSpeechError] = useState<string | null>(null);
   const wrapperRef = useRef<HTMLFormElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -132,6 +133,13 @@ export function Filters({
     cities,
     provinces,
   });
+  const speechStatus = isListening
+    ? { label: 'Escuchando...', tone: 'text-red-600', dot: 'bg-red-500' }
+    : isSpeechBlocked
+      ? { label: 'Micrófono bloqueado', tone: 'text-amber-700', dot: 'bg-amber-500' }
+      : !isSpeechSupported
+        ? { label: 'Micrófono no disponible', tone: 'text-ink-muted', dot: 'bg-gray-300' }
+        : { label: 'Micrófono inactivo', tone: 'text-ink-muted', dot: 'bg-gray-400' };
 
   // Reset city si cambia la lista y la ciudad actual ya no está
   useEffect(() => {
@@ -189,9 +197,13 @@ export function Filters({
     }
 
     const SpeechRecognitionCtor = getSpeechRecognitionConstructor();
-    if (!SpeechRecognitionCtor) return;
+    if (!SpeechRecognitionCtor) {
+      setSpeechError('Tu navegador no permite búsqueda por voz.');
+      return;
+    }
 
     setSpeechError(null);
+    setIsSpeechBlocked(false);
 
     const recognition = new SpeechRecognitionCtor();
     recognition.lang = 'es-AR';
@@ -210,6 +222,7 @@ export function Filters({
 
     recognition.onerror = (event) => {
       if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+        setIsSpeechBlocked(true);
         setSpeechError('Sin permiso de micrófono. Revisá los permisos del navegador.');
         return;
       }
@@ -385,11 +398,13 @@ export function Filters({
             <button
               type="button"
               onClick={toggleVoiceSearch}
-              title={isListening ? 'Detener grabación' : 'Buscar por voz'}
+              title={isListening ? 'Detener grabación' : isSpeechBlocked ? 'Micrófono bloqueado' : 'Buscar por voz'}
               className={`relative flex items-center justify-center w-10 h-10 rounded-xl border transition-all duration-150 flex-shrink-0 ${
                 isListening
                   ? 'bg-red-500 border-red-500 text-white shadow-sm'
-                  : 'bg-white border-gray-200 text-ink-muted hover:border-brand-300 hover:text-brand-500 hover:bg-brand-50'
+                  : isSpeechBlocked
+                    ? 'bg-amber-50 border-amber-300 text-amber-700'
+                    : 'bg-white border-gray-200 text-ink-muted hover:border-brand-300 hover:text-brand-500 hover:bg-brand-50'
               }`}
             >
               {isListening ? (
@@ -403,6 +418,11 @@ export function Filters({
               )}
             </button>
           )}
+
+          <div className={`ml-1 hidden sm:flex items-center gap-2 rounded-full px-3 py-2 text-xs font-medium ${speechStatus.tone}`}>
+            <span className={`h-2 w-2 rounded-full ${speechStatus.dot}`} />
+            <span>{speechStatus.label}</span>
+          </div>
         </div>
 
         {/* Ordenamiento */}
